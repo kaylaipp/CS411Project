@@ -1,0 +1,18 @@
+CS 411 Team project
+
+Possible ideas: 
+
+database api aggregation and analysis: users choose 2 or more api’s they want to request data from. The application allows users to view and aggregate the data, along with performing additional analysis on the combined data and exporting results into a csv
+problem we are solving: making data analysis 
+apis to use: yelp vs grubhub, uber vs lyft, etc
+third party auth: facebook, twitter 
+
+streamlined medical care: efficiently find medical professionals in your area and have your new patient information forwarded 
+problem we are solving: the healthcare system is fragmented, this helps simplify the process of finding a healthcare provider and makes the process of visiting a new doctor easier 
+apis to use: DocuSign, CUBES healthcare messenger api 
+third part auth: google/gmail, facebook
+
+Sports betting: bet on sports in real time with friends and fans from around the world. Can be with real or fake money, tasks, dares etc. This app basically helps ensures that the bet is agreed upon. 
+problem we are solving: centralize sports betting to a single site, see what other users are betting on/for 
+apis to use: paypal + venmo (Braintree), stripe etc 
+third party auth: facebook, twitter, etc
