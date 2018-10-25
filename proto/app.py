@@ -54,7 +54,7 @@ def searchResults():
     query = request.form.get('query')
     tweets = getTweets(query)
     quotes = getQuote(query)
-    return render_template('search.html', tweets = tweets, quotes = quotes)
+    return render_template('search.html', tweets = tweets, quotes = quotes, query = query)
 
 if __name__ == '__main__':
     app.run()

@@ -10,25 +10,33 @@
     <link rel="stylesheet" type="text/css" href="../static/style.css">
 </head>
 <body>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 style="text-align:center;">{{ query }} <br/>
+                <small>
+                    {% for quote in quotes %}
+                        Price: ${{ quote }}
+                    {% endfor %}
 
-    <div class = "searchResults">
-    <h3 align='center'>Search Results</h3>
-    <table>
-        {% for tweet in tweets %}
-            <tr>
-                <th>  </th>
-                <td> {{ tweet }} </td>
-            </tr>
-        {% endfor %}
-    </table>
-    <table>
-        {% for quote in quotes %}
-            <tr>
-                <th>  </th>
-                <td> {{ quotes }} </td>
-            </tr>
-        {% endfor %}
-    </table>
+                </small>
+            </h1>
+
+
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Tweets</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for tweet in tweets %}
+                    <tr>
+                        <td> {{ tweet }} </td>
+                    </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        </div>
     </div>
 </body>
 </html>
