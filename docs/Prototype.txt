@@ -1,0 +1,20 @@
+﻿CS411 Project Assignment#3
+Prototyping API calls
+
+
+A document explaining why you chose the technology stack that you are
+demonstrating; I’d like to know if you considered other stacks, and the process you
+used to choose the stack for the prototype. The doc should be added to your ‘docs’
+folder on github.
+
+
+Our application, MarketSentiment, is used to be able to analyze stock valuation based on consumer sentiment comparing it against current stock trends. By using twitter posts we would gather consumer perceptions of a stock that is then used to gauge whether there is a positive or negative outlook on the firm and offer a rating.
+
+
+When going about choosing a framework we analyzed which would best help us achieve our goals by looking for one that had a strong community and extensive documentation. We also looked at stacks that were consistent and had a solid foundation. This would then allow us to work on the project using agile methodologies while also offering various libraries and packages. 
+
+
+After looking at potential stacks such as Flask, LAMP, MEAN we went with Flask for our framework because it fit with our requirements and goals.
+
+
+We also used Postman to model our API calls. It gave us a generic structure for our code as well, which was useful and easy to integrate with Flask.
