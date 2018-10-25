@@ -1,0 +1,16 @@
+div.searchbar{
+    margin: 0 auto;
+    width: 50%; 
+}
+
+div.searchResults{
+    margin-right: auto; 
+    margin-left: auto;
+    margin: 0px auto;
+}
+
+table{
+    margin: 0 auto;
+}
+
+
