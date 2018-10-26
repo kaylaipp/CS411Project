@@ -49,9 +49,9 @@ def getQuote(query):
     #     quotes.append(quote)
     return quotes
 
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['GET'])
 def searchResults(): 
-    query = request.form.get('query')
+    query = request.args.get('query')
     tweets = getTweets(query)
     quotes = getQuote(query)
     return render_template('search.html', tweets = tweets, quotes = quotes, query = query)
