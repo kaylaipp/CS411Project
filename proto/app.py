@@ -23,9 +23,13 @@ stockURL = "https://www.alphavantage.co/query"
 
 
 app = Flask(__name__)
+@app.route('/oldindex')
+def oldindex():
+    return render_template('index.html')
+
 @app.route('/')
 def mainPage():
-    return render_template('index.html')
+    return render_template('home.html')
 
 #get list of tweets based on query 
 def getTweets(query):
