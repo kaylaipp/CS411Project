@@ -6,21 +6,26 @@ from random import randint
 import config
 import requests
 from datetime import date, timedelta
+from watson_developer_cloud.natural_language_understanding_v1 import Features, EntitiesOptions, KeywordsOptions
+from watson_developer_cloud import ToneAnalyzerV3
 
 #twitter authentication - put keys in config.py & gitignore 
 CONSUMER_KEY = config.consumer_key
 CONSUMER_SECRET = config.consumer_secret
 ACCESS_KEY = config.access_token_key
 ACCESS_SECRET = config.access_token_secret
-
 auth = tweepy.auth.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 twitter_api = tweepy.API(auth)
 
+#IBM Watson authentication & connnection - keys in config.py
+tone_analyzer = ToneAnalyzerV3(
+    version='2017-09-21',
+    username = config.username2,
+    password = config.password2)
+
 stockURL = "https://www.alphavantage.co/query"
 #query = "AAPL"
-
-
 
 app = Flask(__name__)
 @app.route('/oldindex')
@@ -33,11 +38,41 @@ def mainPage():
 
 #get list of tweets based on query 
 def getTweets(query):
-    search_results = twitter_api.search(query, count=10)
+    #exclude retweets & get full text of tweets 
+    query = query + ' -filter:retweets'
+    search_results = twitter_api.search(query, count=10, tweet_mode = 'extended', lang = 'en')
     tweets = []
     for tweet in search_results:
-        tweets.append(tweet.text)
+        tweet = tweet.full_text
+        tweet = re.sub(r'http\S+', "", str(tweet))
+        tweets.append(tweet)
+    print(tweets)
     return tweets
+
+#compute sentiment analysis on gathered tweets 
+def getSentiment(tweets):
+    #convert list of tweets to one large str
+    tweets = " ".join(tweets)
+
+    tone_analysis = tone_analyzer.tone(
+        {'text': tweets},
+        'application/json'
+    ).get_result()
+
+    #parse json output for tones 
+    result = json.loads(json.dumps(tone_analysis, indent=2))
+    all_tones = result['document_tone']['tones']
+    
+    #hold tones in tuples - ex [(0.55, Sadness), (0.2, Analytical)]
+    #conver tone scores to percentages 
+    tones = []
+    for t in all_tones: 
+        name = t['tone_name']
+        score = t['score']*100
+        score = "{0:.2f}".format(score)     
+        tones.append((name, score))
+    print(tones)
+    return tones
 
 def getQuote(query):
     yesterday = date.today() - timedelta(days=1)
@@ -49,8 +84,6 @@ def getQuote(query):
         }
     response = requests.request("GET", stockURL, headers=headers, params=querystring)
     quotes = [response.json()["Time Series (Daily)"][str(yesterday)]["4. close"]]
-    # for quote in response:
-    #     quotes.append(quote)
     return quotes
 
 @app.route('/search', methods=['GET'])
@@ -58,8 +91,10 @@ def searchResults():
     query = request.args.get('query')
     tweets = getTweets(query)
     quotes = getQuote(query)
-    return render_template('search.html', tweets = tweets, quotes = quotes, query = query)
+    tones = getSentiment(tweets)
+    return render_template('search.html', tweets = tweets, quotes = quotes, query = query, tones = tones)
 
 if __name__ == '__main__':
     app.run()
+    #sentiment()
 
