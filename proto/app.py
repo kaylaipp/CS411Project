@@ -8,6 +8,9 @@ import requests
 from datetime import date, timedelta
 from watson_developer_cloud.natural_language_understanding_v1 import Features, EntitiesOptions, KeywordsOptions
 from watson_developer_cloud import ToneAnalyzerV3
+import datetime, pprint
+from flask_pymongo import PyMongo
+from pymongo import MongoClient   #docs: http://api.mongodb.com/python/current/index.html
 
 #twitter authentication - put keys in config.py & gitignore 
 CONSUMER_KEY = config.consumer_key
@@ -25,7 +28,13 @@ tone_analyzer = ToneAnalyzerV3(
     password = config.password2)
 
 stockURL = "https://www.alphavantage.co/query"
-#query = "AAPL"
+
+#connect to mongo server 
+#create cachedtweets collection for caching 
+client = MongoClient()
+client = MongoClient('mongodb://127.0.0.1:27017')
+db = client.database
+cachedtweets = db.cachedtweets
 
 app = Flask(__name__)
 @app.route('/oldindex')
@@ -36,18 +45,70 @@ def oldindex():
 def mainPage():
     return render_template('home.html')
 
-#get list of tweets based on query 
-def getTweets(query):
+
+#this function actually gets & returns list of tweets
+def getTweetsHelper(query):
     #exclude retweets & get full text of tweets 
-    query = query + ' -filter:retweets'
-    search_results = twitter_api.search(query, count=10, tweet_mode = 'extended', lang = 'en')
+    q = query + ' -filter:retweets'
+    search_results = twitter_api.search(q, count=10, tweet_mode = 'extended', lang = 'en')
     tweets = []
     for tweet in search_results:
         tweet = tweet.full_text
         tweet = re.sub(r'http\S+', "", str(tweet))
         tweets.append(tweet)
-    print(tweets)
     return tweets
+
+'''
+get list of tweets based on query 
+if tweets for company already exist and cached time 
+is less than 15 minutes from curent time, take those tweets in db and return 
+else get new tweets from twitter & replace old ones in db 
+'''
+def getTweets(query):
+
+    current_time = datetime.datetime.utcnow()
+
+    #check if tweets already cached for this company 
+    cache = db.cachedtweets.find_one({'company': query})
+
+    #if company not in db at all, just get & return tweets 
+    if cache is None: 
+        tweets = getTweetsHelper(query)
+        doc = {'company': query,
+                'time'  : current_time,
+                'tweets': tweets}
+        db.cachedtweets.insert_one(doc)
+        print ('Inserted data successfully')
+        return tweets
+    else: 
+        #check if tweets in db are from within 15 mins
+        #if so, return those 
+        cached_time = cache['time']
+        limit = cached_time + datetime.timedelta(minutes=15)
+        diff = (current_time - cached_time).total_seconds()
+        print('diff: ', diff)
+
+        if diff < 900:
+            print('')
+            print('returning cached tweets')
+            return cache['tweets']
+
+        #otherwise delete old tweets in db and lookup new tweets
+        #and add to db 
+        else:
+            #delete old 
+            cachedtweets.delete_one(cache)
+            #get new tweets insert into tweet collection in db
+            tweets = getTweetsHelper(query)
+            doc = {'company': query,
+                    'time'  : current_time,
+                    'tweets': tweets}
+
+            print('attempting to insert tweet doc')
+            id_ = db.cachedtweets.insert_one(doc)
+            print('id: ', id_)
+            print ('Inserted data successfully')
+            return tweets
 
 #compute sentiment analysis on gathered tweets 
 def getSentiment(tweets):
@@ -95,6 +156,6 @@ def searchResults():
     return render_template('search.html', tweets = tweets, quotes = quotes, query = query, tones = tones)
 
 if __name__ == '__main__':
-    app.run()
-    #sentiment()
+    app.run(debug=true)
+
 
