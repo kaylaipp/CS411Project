@@ -1,0 +1,8 @@
+Caching: 
+We’re currently utilizing Mongodb to store and cache the tweets for a company. 
+If a user queries that company again within a 15 minute time frame, 
+our app gets the cached tweets from the database and returns it. 
+If there is tweets for that company in the database but they are greater than 15 minutes old,
+our app makes a new call to Twitter and replaces those tweets in the database, thus we save an API call. 
+We also plan on caching tweet sentiment in the database as well within a specified time frame. 
+
