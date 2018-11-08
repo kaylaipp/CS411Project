@@ -1,0 +1,181 @@
+{
+  "fields": [
+    {
+      "name": "_id",
+      "path": "_id",
+      "count": 3,
+      "types": [
+        {
+          "name": "ObjectID",
+          "bsonType": "ObjectID",
+          "path": "_id",
+          "count": 3,
+          "values": [
+            "5be498fef018ed45254a5ab1",
+            "5be49bfca51b6323bb3191fa",
+            "5be49e6e896c0c3ee2c315a9"
+          ],
+          "total_count": 0,
+          "probability": 1,
+          "unique": 3,
+          "has_duplicates": false
+        }
+      ],
+      "total_count": 3,
+      "type": "ObjectID",
+      "has_duplicates": false,
+      "probability": 1
+    },
+    {
+      "name": "company",
+      "path": "company",
+      "count": 3,
+      "types": [
+        {
+          "name": "String",
+          "bsonType": "String",
+          "path": "company",
+          "count": 3,
+          "values": [
+            "NVDA",
+            "ibm",
+            "AAPL"
+          ],
+          "total_count": 0,
+          "probability": 1,
+          "unique": 3,
+          "has_duplicates": false
+        }
+      ],
+      "total_count": 3,
+      "type": "String",
+      "has_duplicates": false,
+      "probability": 1
+    },
+    {
+      "name": "sentiment",
+      "path": "sentiment",
+      "count": 1,
+      "types": [
+        {
+          "name": "Undefined",
+          "type": "Undefined",
+          "path": "sentiment",
+          "count": 2,
+          "total_count": 0,
+          "probability": 0.6666666666666666,
+          "unique": 1,
+          "has_duplicates": true
+        },
+        {
+          "name": "Array",
+          "bsonType": "Array",
+          "path": "sentiment",
+          "count": 1,
+          "types": [],
+          "lengths": [
+            0
+          ],
+          "total_count": 0,
+          "probability": 0.3333333333333333,
+          "average_length": 0
+        }
+      ],
+      "total_count": 3,
+      "type": [
+        "Undefined",
+        "Array"
+      ],
+      "has_duplicates": true,
+      "probability": 0.3333333333333333
+    },
+    {
+      "name": "time",
+      "path": "time",
+      "count": 3,
+      "types": [
+        {
+          "name": "Date",
+          "bsonType": "Date",
+          "path": "time",
+          "count": 3,
+          "values": [
+            "2018-11-08T20:13:50.613Z",
+            "2018-11-08T20:26:36.291Z",
+            "2018-11-08T20:37:00.820Z"
+          ],
+          "total_count": 0,
+          "probability": 1,
+          "unique": 3,
+          "has_duplicates": false
+        }
+      ],
+      "total_count": 3,
+      "type": "Date",
+      "has_duplicates": false,
+      "probability": 1
+    },
+    {
+      "name": "tweets",
+      "path": "tweets",
+      "count": 3,
+      "types": [
+        {
+          "name": "Array",
+          "bsonType": "Array",
+          "path": "tweets",
+          "count": 3,
+          "types": [
+            {
+              "name": "String",
+              "bsonType": "String",
+              "path": "tweets",
+              "count": 22,
+              "values": [
+                "Do you trade $NVDA? Do you know about $FNGU or $FNGD?  \n\n ",
+                "Bought weekly $AAPL $205 $NVDA $205 &amp; $207.5 calls ",
+                "NVDA breaking down very bad chart formation",
+                "Buy tech, high growth, and semi names amid weakness. This selling probably the last bearish hedge funds attack before the real year end rally. Shorting the market at this level can be risky. Be patient and stick to the bull case. $FAANG $SOXX $AMZN $NFLX $MU $NVDA",
+                "@option_snipper How about NVDA puts? Do you recommend holding on to them?",
+                "$NVDA &lt; 205 is not a good look heading into next week's ER. Bounced from 176 10/29 lod; could drag down semis with it especially if $INTC was a false breakout.",
+                "@AOTtrades Imagine if we didn't stopped out at 211 on NVDA today morning,option call premiums should be wrecked if I held till now.TY stu for nice stop loss method.",
+                "Don't miss our next FREE OPTION TRADE.  Sign up for our Daily Free Trades at  $NVDA $TSLA $GS $ORCL $BAC $GOOGL $FB",
+                "Show your home who's boss. A new Alexa Skill has launched in the US enabling hands-free control of #NVIDIASHIELD TV with your Amazon Echo devices.  ",
+                "@CeilingFeeling If you're using NVDA, set focus mode or whatever it's called with NVDA space. Then you can read as normal. Tricked me at first too",
+                "IBM $IBM Receives Consensus Recommendation of “Hold” from Analysts ",
+                "IBM $IBM Receives Consensus Recommendation of “Hold” from Analysts  ",
+                "Ransomware-as-a-Service Program Offers Affiliates Up to 75 Percent of Revenue to...  ",
+                "Mystery of Man &amp; Machine:\n“The Imitation Game” is like a sword fight, you must think before you automate...”\n“Returning to the IBM 650 and me. I started out (1956 or so) - Richard Hamming, pension\n“Returning to IBM BASIC. I started out in ‘85 or so. - Colin, pension\npic USPTO ",
+                "Red Hat-IBM Acquisition: Clash of Cultures or Best of Both Worlds? ",
+                "IBM: A guiding framework for #digitaltransformation - “Think, transform, thrive.”  #business #tech",
+                "A great discussion around clash of culture of @RedHat and @IBM . I am among those who see a silver lining. ",
+                "Threat Actors Combine Windows Utilities in Malware Campaign Targeting Users in...  ",
+                "We're honored to have Jim Colson, IBM Fellow and SecurityGate Advisor, work with our team today! #SecurityGate \n#cybersecurity #cyberriskmanagement #cyberriskassessment #startup ",
+                "“Learn from our people &amp; our clients” @StephenALeonard #RallyIBM #TownHall @IBMDigitalSales @IBM ",
+                "Come on market fatties... fatfinger the bid it's the only way to lure retail in\n\n$AMZN $AAPL $QQQ $ES $SPX $SPY",
+                "@SwatOptions Thks. Will add this mantra to my newly created, thks to AAPL, don’t trade into earnings. 😬"
+              ],
+              "total_count": 0,
+              "probability": 1,
+              "unique": 22,
+              "has_duplicates": false
+            }
+          ],
+          "lengths": [
+            10,
+            10,
+            2
+          ],
+          "total_count": 22,
+          "probability": 1,
+          "average_length": 7.333333333333333
+        }
+      ],
+      "total_count": 3,
+      "type": "Array",
+      "has_duplicates": false,
+      "probability": 1
+    }
+  ],
+  "count": 3
+}
