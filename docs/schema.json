@@ -179,3 +179,134 @@
   ],
   "count": 3
 }
+
+
+
+
+
+
+{
+  "fields": [
+    {
+      "name": "_id",
+      "path": "_id",
+      "count": 1,
+      "types": [
+        {
+          "name": "ObjectID",
+          "bsonType": "ObjectID",
+          "path": "_id",
+          "count": 1,
+          "values": [
+            "5be4a195a8716b3c52c6401c"
+          ],
+          "total_count": 0,
+          "probability": 1,
+          "unique": 1,
+          "has_duplicates": false
+        }
+      ],
+      "total_count": 1,
+      "type": "ObjectID",
+      "has_duplicates": false,
+      "probability": 1
+    },
+    {
+      "name": "email",
+      "path": "email",
+      "count": 1,
+      "types": [
+        {
+          "name": "String",
+          "bsonType": "String",
+          "path": "email",
+          "count": 1,
+          "values": [
+            "test@bu.edu"
+          ],
+          "total_count": 0,
+          "probability": 1,
+          "unique": 1,
+          "has_duplicates": false
+        }
+      ],
+      "total_count": 1,
+      "type": "String",
+      "has_duplicates": false,
+      "probability": 1
+    },
+    {
+      "name": "first_name",
+      "path": "first_name",
+      "count": 1,
+      "types": [
+        {
+          "name": "String",
+          "bsonType": "String",
+          "path": "first_name",
+          "count": 1,
+          "values": [
+            "test"
+          ],
+          "total_count": 0,
+          "probability": 1,
+          "unique": 1,
+          "has_duplicates": false
+        }
+      ],
+      "total_count": 1,
+      "type": "String",
+      "has_duplicates": false,
+      "probability": 1
+    },
+    {
+      "name": "last_name",
+      "path": "last_name",
+      "count": 1,
+      "types": [
+        {
+          "name": "String",
+          "bsonType": "String",
+          "path": "last_name",
+          "count": 1,
+          "values": [
+            "test2"
+          ],
+          "total_count": 0,
+          "probability": 1,
+          "unique": 1,
+          "has_duplicates": false
+        }
+      ],
+      "total_count": 1,
+      "type": "String",
+      "has_duplicates": false,
+      "probability": 1
+    },
+    {
+      "name": "password",
+      "path": "password",
+      "count": 1,
+      "types": [
+        {
+          "name": "String",
+          "bsonType": "String",
+          "path": "password",
+          "count": 1,
+          "values": [
+            "a secret"
+          ],
+          "total_count": 0,
+          "probability": 1,
+          "unique": 1,
+          "has_duplicates": false
+        }
+      ],
+      "total_count": 1,
+      "type": "String",
+      "has_duplicates": false,
+      "probability": 1
+    }
+  ],
+  "count": 1
+}
