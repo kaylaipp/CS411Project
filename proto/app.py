@@ -32,7 +32,7 @@ stockURL = "https://www.alphavantage.co/query"
 #connect to mongo server 
 #create cachedtweets collection for caching 
 client = MongoClient()
-client = MongoClient('mongodb://127.0.0.1:27017')
+client = MongoClient('mongodb+srv://app:cs411@cluster0-illu3.mongodb.net/test?retryWrites=true')
 db = client.database
 cachedtweets = db.cachedtweets
 
