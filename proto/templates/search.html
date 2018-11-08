@@ -21,6 +21,14 @@
                 </small>
             </h1>
 
+            <h2 style="text-align:center;">Tone: <br/>
+                <small>
+                    {% for tone,score in tones %}
+                        {{ score }}% {{ tone }} <br>
+                    {% endfor %}
+                </small>
+            </h1>
+
 
             <table class="table">
               <thead>
