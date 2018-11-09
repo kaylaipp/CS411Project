@@ -1,22 +1,22 @@
-tweets schema
+"tweets schema"
 {
-  "_id": String,
-  "Company": String,
-  "Time": Date object,
-  "Tweets": String Array 
-  "Sentiment": String Array
+  "_id": "String",
+  "Company": "String",
+  "Time": "Date object",
+  "Tweets": "String Array" 
+  "Sentiment": "String Array"
 }
 
-users schema 
+"users schema"
 {
-  "_id": String,
-  "first_name": String,
-  "last_name": String,
-  "email": String,
-  "pasword": SHA256
+  "_id": "String",
+  "first_name": "String",
+  "last_name": "String",
+  "email": "String",
+  "pasword": "SHA256"
 }
 
-Examples from our db: 
+"Examples from our db:" 
 {
   "fields": [
     {
