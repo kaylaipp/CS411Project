@@ -3,7 +3,7 @@
   "_id": "String",
   "Company": "String",
   "Time": "Date object",
-  "Tweets": "String Array" 
+  "Tweets": "String Array",
   "Sentiment": "String Array"
 }
 
