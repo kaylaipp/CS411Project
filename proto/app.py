@@ -1,6 +1,7 @@
 import tweepy
 import json
-from flask import Flask, render_template, Response, request, redirect, url_for
+from collections import OrderedDict
+from flask import Flask, render_template, Response, request, redirect, url_for, jsonify
 import re
 from random import randint
 import config
@@ -84,7 +85,7 @@ def getTweets(query):
         #check if tweets in db are from within 15 mins
         #if so, return those 
         cached_time = cache['time']
-        limit = cached_time + datetime.timedelta(minutes=15)
+        limit = cached_time + datetime.timedelta(minutes=360)
         diff = (current_time - cached_time).total_seconds()
         print('diff: ', diff)
 
@@ -147,6 +148,22 @@ def getQuote(query):
     quotes = [response.json()["Time Series (Daily)"][str(yesterday)]["4. close"]]
     return quotes
 
+def getChartData(stock, function, interval):
+    querystring = {"function": function, "symbol": stock, "interval":interval, "apikey": "N9U9SP687FD676TQ"}
+    headers = {
+        'Content-Type': "application/json",
+        'cache-control': "no-cache",
+        'Postman-Token': "5284e93d-daa8-4884-9aff-b14c160f5a9b"
+    }
+    res = requests.get("https://www.alphavantage.co/query", params=querystring)
+    return json.loads(res.text, object_pairs_hook=OrderedDict)
+
+
+##########
+################# ROUTES START HERE ##############################
+##########
+
+
 @app.route('/search', methods=['GET'])
 def searchResults(): 
     query = request.args.get('query')
@@ -154,6 +171,32 @@ def searchResults():
     quotes = getQuote(query)
     tones = getSentiment(tweets)
     return render_template('search.html', tweets = tweets, quotes = quotes, query = query, tones = tones)
+
+
+
+@app.route('/chart', methods=['get'])
+def chart():
+    stock = request.args.get('stock')
+    function = request.args.get('function')
+    if(function == "TIME_SERIES_INTRADAY"):
+        interval = request.args.get('interval')
+    else:
+        interval = function.replace('TIME_SERIES_', '').title()
+
+    json_data = getChartData(stock, function, interval)
+    labels = []
+    values = []
+
+    if("Daily" in interval or "min" in interval):
+        text = 'Time Series (%s)' % (interval)
+    else:
+        text = '%s Time Series' % (interval)
+
+    for d in json_data[text]:
+        labels.append(d)
+        values.append(json_data[text][d]['4. close'])
+    labels.reverse()
+    return render_template('chart.html', labels = labels, values = values, query = stock, interval = interval)
 
 if __name__ == '__main__':
     app.run(debug=true)
