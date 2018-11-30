@@ -149,6 +149,12 @@ def getQuote(query):
     return quotes
 
 def getChartData(stock, function, interval):
+    if(function ==""):
+        function = "TIME_SERIES_INTRADAY"
+    if(interval == ""):
+        interval = "1min"
+    if(stock ==""):
+        stock="AAPL"
     querystring = {"function": function, "symbol": stock, "interval":interval, "apikey": "N9U9SP687FD676TQ"}
     headers = {
         'Content-Type': "application/json",
