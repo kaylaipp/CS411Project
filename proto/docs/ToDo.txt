@@ -2,3 +2,10 @@
 2: Confirm data is correct
 3: Test UI
 4: Track changes
+
+
+Watched stocks
+History
+Add favorite stocks
+List most frequent viewed
+Potentially search by name
