@@ -13,6 +13,11 @@ import datetime, pprint
 from flask_pymongo import PyMongo
 from pymongo import MongoClient   #docs: http://api.mongodb.com/python/current/index.html
 from werkzeug.security import generate_password_hash, check_password_hash
+from difflib import SequenceMatcher
+import pandas as pd
+
+#read in stock symbols/company name csv
+company_df = pd.read_csv("companylist.csv")
 
 #twitter authentication - put keys in config.py & gitignore 
 CONSUMER_KEY = config.consumer_key
@@ -152,16 +157,41 @@ def normalize(tones):
             tones[idx] = (val[0], score)
     return tones
         
+'''
+helper function for matching stock symbols 
+with their stock name 
+'''
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
+
 def getQuote(query):
+    #try to lookup user's query 
     yesterday = date.today() - timedelta(days=1)
-    querystring = {"function":"TIME_SERIES_DAILY","symbol":query,"interval":"5min","apikey":"N9U9SP687FD676TQ"}
-    headers = {
-        'Content-Type': "application/json",
-        'cache-control': "no-cache",
-        'Postman-Token': "5284e93d-daa8-4884-9aff-b14c160f5a9b"
-        }
-    response = requests.request("GET", stockURL, headers=headers, params=querystring)
-    quotes = [response.json()["Time Series (Daily)"][str(yesterday)]["4. close"]]
+    try:
+        querystring = {"function":"TIME_SERIES_DAILY","symbol":query,"interval":"5min","apikey":"N9U9SP687FD676TQ"}
+        headers = {
+            'Content-Type': "application/json",
+            'cache-control': "no-cache",
+            'Postman-Token': "5284e93d-daa8-4884-9aff-b14c160f5a9b"
+            }
+        response = requests.request("GET", stockURL, headers=headers, params=querystring)
+        quotes = [response.json()["Time Series (Daily)"][str(yesterday)]["4. close"]]
+
+    #user entered stock name instead of symbol so need to get symbol
+    except KeyError as e:
+        #lookup query in company_df, return query symbol
+        company=company_df[company_df['Name'].str.lower().str.contains(str(query).lower())]
+        symbol = company['Symbol'].iloc[0]
+
+        querystring = {"function":"TIME_SERIES_DAILY","symbol":symbol,"interval":"5min","apikey":"N9U9SP687FD676TQ"}
+        headers = {
+            'Content-Type': "application/json",
+            'cache-control': "no-cache",
+            'Postman-Token': "5284e93d-daa8-4884-9aff-b14c160f5a9b"
+            }
+        response = requests.request("GET", stockURL, headers=headers, params=querystring)
+        quotes = [response.json()["Time Series (Daily)"][str(yesterday)]["4. close"]]
+
     return quotes
 
 @app.route('/search', methods=['GET'])
