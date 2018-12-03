@@ -202,7 +202,11 @@ def chart():
         labels.append(d)
         values.append(json_data[text][d]['4. close'])
     labels.reverse()
-    return render_template('chart.html', labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ")
+    return render_template('testpage.html', labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ")
+
+@app.route('/test', methods=['get'])
+def test():
+    return render_template('testpage.html', userName = 'guest')
 
 if __name__ == '__main__':
     app.run(debug=true)
