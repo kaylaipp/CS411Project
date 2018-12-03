@@ -54,49 +54,19 @@
 
 
 <script>
-    const decimals = 2;
-    var ctx = document.getElementById('myChart').getContext('2d');
-    var chart = new Chart(ctx, {
-        // The type of chart we want to create
-        type: 'line',
-
-        // The data for our dataset
-        data: {
-            labels: [{% for item in labels %}
-                      "{{item}}",
-                  {% endfor %}],
-            datasets: [{
-                label: "{{ interval }} Stock Price for {{ query }}",
-                backgroundColor: 'rgba(255, 99, 132,0.5)',
-                borderColor: 'rgb(255, 99, 132)',
-                data: [{% for item in values %}
-                          {{item}},
-                        {% endfor %}],
-            }]
+    var ctx = document.getElementById("myChart").getContext('2d');
+    var myBarChart = new Chart(ctx, {
+    type: 'bar',
+    data:[
+        {% for tone,score in tones %}
+        {
+         x:{{ tone }},
+         y:{{ score }}
         },
-
-        // Configuration options go here
-        options: {
-            scales: {
-                xAxes: [{
-                    gridLines: {
-                        display:false
-                    }
-                }],
-                yAxes: [{
-                    ticks: {
-                        // Include a dollar sign in the ticks
-                        callback: function(value, index, values) {
-                            return '$' + value.toFixed(decimals);
-                        }
-                    },
-                    gridLines: {
-                        display:false
-                    }
-                }]
-            }
-        }
-    });
+        {% endfor %}
+        ],
+    options:{}
+});
 
 
 </script>
