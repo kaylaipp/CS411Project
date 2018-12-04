@@ -170,15 +170,6 @@ def getChartData(stock, function, interval):
 ##########
 
 
-@app.route('/search', methods=['GET'])
-def searchResults(): 
-    query = request.args.get('query')
-    tweets = getTweets(query)
-    quotes = getQuote(query)
-    tones = getSentiment(tweets)
-    return render_template('search.html', tweets = tweets, quotes = quotes, query = query, tones = tones)
-
-
 #NOT STABLE RN
 @app.route('/chart', methods=['get'])
 def chart():
