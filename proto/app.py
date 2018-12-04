@@ -1,5 +1,6 @@
 import tweepy
 import json
+import flask
 from flask import Flask, render_template, Response, request, redirect, url_for, session,flash
 import re
 from random import randint
@@ -13,15 +14,76 @@ import datetime, pprint
 from flask_pymongo import PyMongo
 from pymongo import MongoClient   #docs: http://api.mongodb.com/python/current/index.html
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_oauth import OAuth
+
+app = Flask(__name__)
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 #twitter authentication - put keys in config.py & gitignore 
 CONSUMER_KEY = config.consumer_key
 CONSUMER_SECRET = config.consumer_secret
 ACCESS_KEY = config.access_token_key
 ACCESS_SECRET = config.access_token_secret
-auth = tweepy.auth.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
-twitter_api = tweepy.API(auth)
+
+callback_url = 'http://localhost:5000/verify'
+session = {}
+db = {}
+
+@app.route("/twitter")
+def send_token():
+
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET, callback_url)
+    redirect_url = auth.get_authorization_url()
+
+    try:
+        #redirect_url = auth.get_authorization_url()
+        session['request_token'] = auth.request_token
+    except tweepy.TweepError:
+        print('Error! Failed to get request token.')
+
+    return flask.redirect(redirect_url)
+
+@app.route("/verify")
+def get_verification():
+
+    verifier = request.args.get('oauth_verifier')
+    print("verifier: ", verifier)
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+
+    auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+
+    print(session['request_token'])
+    print(session)
+
+    token = session['request_token']
+    del session['request_token']
+
+    auth.request_token = { 'oauth_token' : token,
+                             'oauth_token_secret' : verifier }
+
+    try:
+        auth.get_access_token(verifier)
+    except tweepy.TweepError:
+        print(tweepy.TweepError)
+        print('Error! Failed to get access token.')
+
+    api = tweepy.API(auth)
+    # db['api'] = api
+    # db['access_token_key']=auth.access_token.key
+    # db['access_token_secret']=auth.access_token.secret
+    print(session)
+    return flask.redirect(flask.url_for('mainPage'))
+
+
+@app.route("/start")
+def start():
+    #auth done, app logic can begin
+    api = db['api']
+
+    #example, print your latest status posts
+    return flask.render_template('home.html', tweets=api.user_timeline())
+
+
 
 #IBM Watson authentication & connnection - keys in config.py
 tone_analyzer = ToneAnalyzerV3(
@@ -39,8 +101,6 @@ db = client.database
 cachedtweets = db.cachedtweets
 users = db.users
 
-app = Flask(__name__)
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 @app.route('/oldindex')
 def oldindex():
@@ -176,20 +236,124 @@ def searchResults():
 method to log user in
 '''
 # @app.route('/login', methods=['GET','POST'])
-@app.route('/login', methods=['POST'])
+@app.route('/', methods=['POST'])
 def login():
-    email = request.form['email']
-    password = request.form['password']
-    print('here')
-    if userExists(email, password):
-        print('here2')
-        user = db.users.find_one({'email': email})
-        session['name'] = user['name']
-        return render_template('home.html', name = user['name'], loggedIn = True)
-    print('')
-    print("User doesn't exist or password is inccorect.")
+    access_token = session.get('access_token')
+    if access_token is None:
+        return redirect(url_for('auth'))
+    access_token = access_token[0]
+
+    # email = request.form['email']
+    # password = request.form['password']
+    # print('here')
+    # if userExists(email, password):
+    #     print('here2')
+    #     user = db.users.find_one({'email': email})
+    #     session['name'] = user['name']
+    #     return render_template('home.html', name = user['name'], loggedIn = True)
+    # print('')
+    # print("User doesn't exist or password is inccorect.")
     return render_template('home.html', error = True, error_message = "Credentials don't match")
 
+
+
+
+
+# @app.route('/auth')
+# def auth():
+#     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET, callback)
+#     url = auth.get_authorization_url()
+#     session['request_token'] = auth.request_token
+#     return redirect(url)
+
+# # twitter oauth - login to twitter
+# oauth = OAuth()
+# twitter = oauth.remote_app('twitter',
+#     # unless absolute urls are used to make requests, this will be added
+#     # before all URLs.  This is also true for request_token_url and others.
+#     base_url='https://api.twitter.com/1/',
+#     # where flask should look for new request tokens
+#     request_token_url='https://api.twitter.com/oauth/request_token',
+#     # where flask should exchange the token with the remote application
+#     access_token_url='https://api.twitter.com/oauth/access_token',
+#     # twitter knows two authorizatiom URLs.  /authorize and /authenticate.
+#     # they mostly work the same, but for sign on /authenticate is
+#     # expected because this will give the user a slightly different
+#     # user interface on the twitter side.
+#     authorize_url='https://api.twitter.com/oauth/authenticate',
+#     # the consumer keys from the twitter application registry.
+#     consumer_key='CONSUMER_KEY',
+#     consumer_secret='CONSUMER_SECRET'
+# )
+
+# @twitter.tokengetter
+# def get_twitter_token(token=None):
+#     return session.get('twitter_token')
+
+# @app.route('/login')
+# def login2():
+#     return twitter.authorize(callback=url_for('oauth_authorized',
+#         next=request.args.get('next') or request.referrer or None))
+
+# @app.route('/oauth-authorized')
+# @twitter.authorized_handler
+# def oauth_authorized(resp):
+#     next_url = request.args.get('next') or url_for('mainPage')
+#     if resp is None:
+#         (u'You denied the request to sign in.')
+#         return redirect(next_url)
+ 
+#     access_token = resp['oauth_token']
+#     session['access_token'] = access_token
+#     session['screen_name'] = resp['screen_name']
+ 
+#     session['twitter_token'] = (
+#         resp['oauth_token'],
+#         resp['oauth_token_secret']
+#     )
+ 
+ 
+#     return redirect(url_for('home'))
+
+
+# @app.route('/login_twitter', methods=['GET','POST'])
+# def login_twitter():
+#     # print('Before')
+#     redirect_url = 'http://www.login.twitter.com'
+#     callback_url = 'http://127.0.0.1:5000/'
+#     # print(CONSUMER_KEY)
+#     # print(CONSUMER_SECRET)
+#     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+#     # print(auth)
+#     auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+#     api = tweepy.API(auth)
+#     # print(api)
+
+    # auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET, callback_url)
+    # print('After')
+    # print(auth)
+    # token = session.get('request_token')
+    # print("token: ", token)
+    # session.delete('request_token')
+    # print("deleted token")
+    # auth.request_token = token
+    # print("checks token")
+
+    # try:
+    #     redirect_url = auth.get_authorization_url()
+    # except tweepy.TweepError:
+    #     print('Error! Failed to get request token.')
+
+    # session.set('request_token', auth.request_token)
+    # verifier = request.GET.get('oauth_verifier')
+
+    # auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+    # twitter_api = tweepy.API(auth)
+    # print('Test')
+    # print(auth)
+    # print('Test2')
+    # print(api.me().name)
+    # return render_template('home.html')
 
 @app.route('/call_modal', methods=['GET', 'POST'])
 def call_modal():
@@ -257,6 +421,6 @@ def userExists(email, password):
 
 
 if __name__ == '__main__':
-    app.run(debug=true)
+    app.run(debug=True)
 
 
