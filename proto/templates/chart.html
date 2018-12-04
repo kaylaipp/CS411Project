@@ -1,6 +1,6 @@
 <html>
 <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.js"></script>
   <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <!-- jQuery library -->
@@ -41,7 +41,7 @@
                 </form>
            </div>
            <div  id="load" class="col-4 offset-4">
-               <canvas id="myChart"></canvas>
+               <canvas id="barChart"></canvas>
            </div>
 
        </div>
@@ -54,21 +54,39 @@
 
 
 <script>
-    var ctx = document.getElementById("myChart").getContext('2d');
+    var ctx = document.getElementById('barChart')
     var myBarChart = new Chart(ctx, {
-    type: 'bar',
-    data:[
-        {% for tone,score in tones %}
-        {
-         x:{{ tone }},
-         y:{{ score }}
-        },
-        {% endfor %}
+      type: 'bar',
+      data: {
+        labels: [ {% for tone,score in tones %}
+                "{{ tone }}",
+            {% endfor %}
         ],
-    options:{}
-});
-
-
+        datasets: [{
+                label: "BAR CHART",
+                data: [{% for tone,score in tones %}
+                    {{ score }},
+                {% endfor %}
+                ],
+            }]
+      },
+      options: {
+        legend: {
+        },
+        scales: {
+          xAxes: [{
+            ticks: {
+              min: 0
+            }
+          }],
+          yAxes: [{
+               ticks:{
+                   beginAtZero: true
+               }
+          }],
+        }
+      }
+    });
 </script>
 
 </html>
