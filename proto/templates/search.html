@@ -14,10 +14,12 @@
         <div class="jumbotron">
             <h1 style="text-align:center;">{{ query }} <br/>
                 <small>
-                    {% for quote in quotes %}
-                        Price: ${{ quote }}
-                    {% endfor %}
+                    {{quotes}}
+                    {% if quotes == "None" %}
+                        <h3>Coudn't find that company, please try again!</h3>
+                    {% else %}
 
+                    {% endif %}
                 </small>
             </h1>
 

@@ -165,8 +165,24 @@ def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 def getQuote(query):
-    #try to lookup user's query 
+
+    #stock market closed on weekends, so if querying on weekend, get friday value
     yesterday = date.today() - timedelta(days=1)
+    if yesterday.weekday()==5: 
+        yesterday = yesterday - timedelta(days=1)
+    if yesterday.weekday()==6:
+        yesterday = yesterday - timedelta(days=2)
+
+    #if query is 'Apple' instead of 'AAPL'
+    if query not in company_df[['Symbol']].values.tolist():
+        #get symbol 
+        company=company_df[company_df['Name'].str.lower().str.contains(str(query).lower())]
+        print('company: ', company)
+        if company.empty: 
+            # return None
+            return 'None'
+        else:
+            query = company['Symbol'].iloc[0]
     try:
         querystring = {"function":"TIME_SERIES_DAILY","symbol":query,"interval":"5min","apikey":"N9U9SP687FD676TQ"}
         headers = {
@@ -177,20 +193,9 @@ def getQuote(query):
         response = requests.request("GET", stockURL, headers=headers, params=querystring)
         quotes = [response.json()["Time Series (Daily)"][str(yesterday)]["4. close"]]
 
-    #user entered stock name instead of symbol so need to get symbol
+    #couldn't find stock/company so return error message to user 
     except KeyError as e:
-        #lookup query in company_df, return query symbol
-        company=company_df[company_df['Name'].str.lower().str.contains(str(query).lower())]
-        symbol = company['Symbol'].iloc[0]
-
-        querystring = {"function":"TIME_SERIES_DAILY","symbol":symbol,"interval":"5min","apikey":"N9U9SP687FD676TQ"}
-        headers = {
-            'Content-Type': "application/json",
-            'cache-control': "no-cache",
-            'Postman-Token': "5284e93d-daa8-4884-9aff-b14c160f5a9b"
-            }
-        response = requests.request("GET", stockURL, headers=headers, params=querystring)
-        quotes = [response.json()["Time Series (Daily)"][str(yesterday)]["4. close"]]
+        quotes = 'None'
 
     return quotes
 
@@ -200,19 +205,17 @@ def searchResults():
     tweets = getTweets(query)
     quotes = getQuote(query)
     tones = getSentiment(tweets)
+    print('quote: ', quotes)
     return render_template('search.html', tweets = tweets, quotes = quotes, query = query, tones = tones)
 
 '''
 method to log user in
 '''
-# @app.route('/login', methods=['GET','POST'])
 @app.route('/login', methods=['POST'])
 def login():
     email = request.form['email']
     password = request.form['password']
-    print('here')
     if userExists(email, password):
-        print('here2')
         user = db.users.find_one({'email': email})
         session['name'] = user['name']
         return render_template('home.html', name = user['name'], loggedIn = True)
@@ -229,15 +232,11 @@ def call_modal():
 '''
 method for user to sign up
 ''' 
-# @app.route('/signup', methods=['GET', 'POST'])
 @app.route('/signup', methods=['POST'])
 def signUp():
-    # email = request.args.get('email')
-    # name = request.args.get('name')
     if request.method == 'POST':
         email = request.form['email']
         name = request.form['name']
-        print('test: ', request.form['password_confirmation'])
         pw = generate_password_hash(request.form['password'])
         addUser(name, email, pw)
         return render_template('home.html', loggedIn = True, name = name)
@@ -271,14 +270,10 @@ email and password must match
 '''
 def userExists(email, password):
     user = db.users.find_one({'email': email})
-    print('user: ', user)
     if user is None: 
         return False
     else: 
-        print('password hash: ', user['password'])
-        print('inputed pass:', password)
         checkPassword = check_password_hash(str(user['password']), str(password))
-        print('checkPassword: ', checkPassword)
         if checkPassword:
             return True
         else: 
