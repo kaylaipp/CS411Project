@@ -37,9 +37,11 @@
               <p class="mb-5">Research about the stocks sentiment by viewing relevant tweets about the company we should have a full release by
                 <strong>Decenber 2019</strong>!</p>
               <div class="input-group input-group-newsletter">
-                <form style="width:100%" action="/search" method = "GET">
+                <form style="width:100%" action="/chart" method = "GET">
                     <div class="input-group input-group-newsletter">
                         <input type="text" class="form-control" placeholder="Search" name="query">
+                        <input hidden name="function" value="TIME_SERIES_INTRADAY">
+                        <input hidden name="interval" value="1min">
                         <div class="input-group-append">
                             <button class="btn btn-secondary" type="submit">Search</button>
                         </div>
