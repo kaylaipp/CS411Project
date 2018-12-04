@@ -204,7 +204,7 @@ def chart():
     labels.reverse()
     tweets = getTweets(stock)
     tones = getSentiment(tweets)
-    return render_template('testpage.html', tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ")
+    return render_template('search.html', userName = "Test", tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ")
 
 if __name__ == '__main__':
     app.run(debug=true)
