@@ -1,0 +1,92 @@
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.js"></script>
+  <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../static/style.css">
+
+<body>
+    <div class="container">
+       <div class="row">
+           <div class="col-12">
+               <form method="get">
+                  <div class="form-group">
+                    <label for="stock">Stock</label>
+                    <input name="stock" type="text" class="form-control" id="stock" value="AAPL" placeholder="AAPL">
+                  </div>
+                  <div class="form-group">
+                    <label for="Type of data">Type of data</label>
+                    <select class="form-control" name="function" id="function">
+                      <option>TIME_SERIES_INTRADAY</option>
+                      <option>TIME_SERIES_DAILY</option>
+                      <option>TIME_SERIES_WEEKLY</option>
+                      <option>TIME_SERIES_MONTHLY</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="interval">Interval</label>
+                    <select class="form-control" name="interval" id="interval">
+                      <option>1min</option>
+                      <option>5min</option>
+                      <option>15min</option>
+                      <option>30min</option>
+                      <option>60min</option>
+                    </select>
+                  </div>
+                   <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+           </div>
+           <div  id="load" class="col-4 offset-4">
+               <canvas id="barChart"></canvas>
+           </div>
+
+       </div>
+
+<div id="modifiersDiv"></div>
+        HELLO
+    </div>
+
+</body>
+
+
+<script>
+    var ctx = document.getElementById('barChart')
+    var myBarChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: [ {% for tone,score in tones %}
+                "{{ tone }}",
+            {% endfor %}
+        ],
+        datasets: [{
+                label: "BAR CHART",
+                data: [{% for tone,score in tones %}
+                    {{ score }},
+                {% endfor %}
+                ],
+            }]
+      },
+      options: {
+        legend: {
+        },
+        scales: {
+          xAxes: [{
+            ticks: {
+              min: 0
+            }
+          }],
+          yAxes: [{
+               ticks:{
+                   beginAtZero: true
+               }
+          }],
+        }
+      }
+    });
+</script>
+
+</html>
