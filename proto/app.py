@@ -222,15 +222,6 @@ def getChartData(stock, function, interval):
 ##########
 
 
-#NOT STABLE RN
-@app.route('/chart', methods=['get'])
-def chart():
-    stock = request.args.get('stock')
-    function = request.args.get('function')
-    if(function == "TIME_SERIES_INTRADAY"):
-        interval = request.args.get('interval')
-    else:
-        interval = function.replace('TIME_SERIES_', '').title()
 @app.route('/search', methods=['GET'])
 def searchResults(): 
     query = request.args.get('query')
