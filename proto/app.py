@@ -15,6 +15,7 @@ from pymongo import MongoClient   #docs: http://api.mongodb.com/python/current/i
 from werkzeug.security import generate_password_hash, check_password_hash
 from difflib import SequenceMatcher
 import pandas as pd
+from collections import OrderedDict
 
 #read in stock symbols/company name csv
 company_df = pd.read_csv("companylist.csv")
