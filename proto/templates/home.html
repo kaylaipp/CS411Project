@@ -20,10 +20,145 @@
 
     <!-- Custom styles for this template -->
     <link href="{{ url_for('static',filename='css/coming-soon.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+
+
 
   </head>
 
   <body>
+
+  <!-- nav bar -->
+   <div class = "navbar">
+      <ul>
+          <a class = "stockUp" href="">StockUp</a>
+          <a href="">About</a>
+
+          {% if loggedIn %}
+          <div class="dropdown">
+              <button class="dropbtn">Hi, {{name}}!</button>
+              <div class="dropdown-content">
+                <a href="/logout">Log out</a>
+              </div>
+          </div>
+
+          {% else %}
+          <button type="button" class="btn" style="background-color:transparent; margin-top:2.5%;" data-toggle="modal" data-target="#loginModal">
+              Log in </button>
+          {% endif %}
+        </ul>
+   </div>
+
+
+  
+  <!-- Login pop up modal --> 
+  <div class="container">
+   <div class="modal fade login" id="loginModal">
+        <div class="modal-dialog login animated">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title">Login</h4>
+                      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                      
+                  </div>
+                  <div class="modal-body">  
+                      <div class="box">
+                           <div class="content">
+                              <div class="social">
+                                  <a class="circle github" href="/auth/github">
+                                      <i class="fab fa-twitter"></i>
+                                  </a>
+                                  <a id="facebook_login" class="circle facebook" href="/auth/facebook">
+                                      <i class="fab fa-facebook fa-fw"></i>
+                                  </a>
+                              </div>
+                              <div class="division">
+                                  <div class="line l"></div>
+                                    <span>or</span>
+                                  <div class="line r"></div>
+                              </div>
+                              <div class="error">
+                                {% if error %}
+                                    <h4>{{error_message}}</h4>
+                                {% endif %}
+                              </div>
+                              <div class="form loginBox">
+                                  <!-- <form action="/login" method="GET" accept-charset="UTF-8"> -->
+                                  <form method="POST" action="/login" accept-charset="UTF-8">
+
+                                  <input id="email" class="form-control" type="text" placeholder="Email" name="email"> 
+                                  <input id="password" class="form-control" type="password" placeholder="Password" name="password">
+                                  <input class="btn btn-default btn-login" type="submit" value="Login" style = "color: white;">
+                                  <!-- <input class="btn btn-default btn-login" type="button" onclick="javascript: someFunctionThatCouldIncludeRedirect();" value="Login" > -->
+                                  
+                                  </form>
+                              </div>
+                           </div>
+                      </div>
+                  </div>
+                  <div class="modal-footer">
+                      <div class="forgot login-footer">
+                          <span>Looking to 
+                               <a href="/" data-toggle="modal" data-target="#signUpModal" data-dismiss="modal">create an account</a>
+                          ?</span>
+                      </div>
+                  </div>        
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- sign up modal -->
+  <div class="container">
+      <div class="modal fade login" id="signUpModal">
+           <div class="modal-dialog login animated">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <h4 class="modal-title" style="text-align:center">Signup</h4>
+                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                         
+                     </div>
+                     <div class="modal-body">  
+                         <div class="box">
+                              <div class="content">
+                                 <div class="social">
+                                     <a class="circle github" href="/auth/github">
+                                         <i class="fab fa-twitter"></i>
+                                     </a>
+                                     <a id="facebook_login" class="circle facebook" href="/auth/facebook">
+                                         <i class="fab fa-facebook fa-fw"></i>
+                                     </a>
+                                 </div>
+                                 <div class="division">
+                                     <div class="line l"></div>
+                                       <span>or</span>
+                                     <div class="line r"></div>
+                                 </div>
+                                 <div class="error"></div>
+                                 <div class="content registerBox" id="signUpModal">
+                                    <div class="form">
+                                       <form method="POST" html="{:multipart=>true}" data-remote="true" action="/signup" accept-charset="UTF-8">
+                                       <input id="email" class="form-control" type="text" placeholder="Email" name="email">
+                                       <input id="name" class="form-control" type="text" placeholder="Name" name="name">
+                                       <input id="password" class="form-control" type="password" placeholder="Password" name="password">
+                                       <input id="password_confirmation" class="form-control" type="password" placeholder="Repeat Password" name="password_confirmation">
+                                       <input class="btn btn-default btn-register" type="submit" value="Create account" name="commit">
+                                       </form>
+                                       </div>
+                                   </div>
+                              </div>
+                         </div>
+                     </div>
+                     <div class="modal-footer">
+                         <div class="forgot register-footer">
+                              <span>Already have an account?</span>
+                              <a href="/" data-toggle="modal" data-target="#loginModal" data-dismiss="modal">Login</a>
+                         </div>
+                     </div>        
+               </div>
+           </div>
+       </div>
+     </div>
 
     <div class="overlay"></div>
     <div class="background"></div>
@@ -35,7 +170,7 @@
             <div class="masthead-content text-white py-5 py-md-0">
               <h1 class="mb-3">Search for a Stock</h1>
               <p class="mb-5">Research about the stocks sentiment by viewing relevant tweets about the company we should have a full release by
-                <strong>Decenber 2019</strong>!</p>
+                <strong>December 2019</strong>!</p>
               <div class="input-group input-group-newsletter">
                 <form style="width:100%" action="/chart" method = "GET">
                     <div class="input-group input-group-newsletter">
