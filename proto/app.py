@@ -223,13 +223,31 @@ def getChartData(stock, function, interval):
 
 
 @app.route('/search', methods=['GET'])
-def searchResults(): 
-    query = request.args.get('query')
-    tweets = getTweets(query)
-    quotes = getQuote(query)
+def searchResults():
+    stock = request.args.get('stock')
+    function = request.args.get('function')
+    if (function == "TIME_SERIES_INTRADAY"):
+        interval = request.args.get('interval')
+    else:
+        interval = function.replace('TIME_SERIES_', '').title()
+
+    json_data = getChartData(stock, function, interval)
+    labels = []
+    values = []
+
+    if ("Daily" in interval or "min" in interval):
+        text = 'Time Series (%s)' % (interval)
+    else:
+        text = '%s Time Series' % (interval)
+
+    for d in json_data[text]:
+        labels.append(d)
+        values.append(json_data[text][d]['4. close'])
+    labels.reverse()
+    tweets = getTweets(stock)
     tones = getSentiment(tweets)
-    print('quote: ', quotes)
-    return render_template('search.html', tweets = tweets, quotes = quotes, query = query, tones = tones)
+    return render_template('search.html', userName="Test", tones=tones, labels=labels, values=values, query=stock,interval=interval, key="N9U9SP687FD676TQ")
+
 
 '''
 method to log user in
