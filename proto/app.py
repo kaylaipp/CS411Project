@@ -18,7 +18,8 @@ from difflib import SequenceMatcher
 import pandas as pd
 
 #read in stock symbols/company name csv
-company_df = pd.read_csv("companylist.csv")
+company_list = pd.read_csv("full.csv")
+
 
 #twitter authentication - put keys in config.py & gitignore 
 CONSUMER_KEY = config.consumer_key
@@ -175,9 +176,9 @@ def getQuote(query):
         yesterday = yesterday - timedelta(days=2)
 
     #if query is 'Apple' instead of 'AAPL'
-    if query not in company_df[['Symbol']].values.tolist():
+    if query not in company_list[['Symbol']].values.tolist():
         #get symbol 
-        company=company_df[company_df['Name'].str.lower().str.contains(str(query).lower())]
+        company=company_list[company_list['Name'].str.lower().str.contains(str(query).lower())]
         print('company: ', company)
         if company.empty: 
             # return None
@@ -207,6 +208,8 @@ def getChartData(stock, function, interval):
         interval = "1min"
     if(stock ==""):
         stock="AAPL"
+    print('')
+    print('stock: ', stock)
     querystring = {"function": function, "symbol": stock, "interval":interval, "apikey": "N9U9SP687FD676TQ"}
     headers = {
         'Content-Type': "application/json",
@@ -220,7 +223,20 @@ def getChartData(stock, function, interval):
     #NOT STABLE RN
 @app.route('/chart', methods=['get'])
 def chart():
+
+    #convert company name to symbol 'AMAZON -> 'AMZN'
     stock = request.args.get('stock')
+    if stock.upper() not in company_list[['Symbol']].values.flatten().tolist():
+        #get symbol 
+        company=company_list[company_list['Name'].str.lower().str.contains(str(stock).lower())]
+        print('company: ', company)
+        if company.empty: 
+            stock = 'None'
+        else:
+            stock = company['Symbol'].iloc[0]
+    else: 
+        stock = stock 
+
     function = request.args.get('function')
     if(function == "TIME_SERIES_INTRADAY"):
         interval = request.args.get('interval')
