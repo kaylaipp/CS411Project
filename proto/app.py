@@ -1,17 +1,24 @@
 import tweepy
 import json
 from collections import OrderedDict
-from flask import Flask, render_template, Response, request, redirect, url_for, jsonify
+from flask import Flask, render_template, Response, request, redirect, url_for, session,flash
 import re
 from random import randint
 import config
 import requests
+import math
 from datetime import date, timedelta
 from watson_developer_cloud.natural_language_understanding_v1 import Features, EntitiesOptions, KeywordsOptions
 from watson_developer_cloud import ToneAnalyzerV3
 import datetime, pprint
 from flask_pymongo import PyMongo
 from pymongo import MongoClient   #docs: http://api.mongodb.com/python/current/index.html
+from werkzeug.security import generate_password_hash, check_password_hash
+from difflib import SequenceMatcher
+import pandas as pd
+
+#read in stock symbols/company name csv
+company_df = pd.read_csv("companylist.csv")
 
 #twitter authentication - put keys in config.py & gitignore 
 CONSUMER_KEY = config.consumer_key
@@ -36,8 +43,11 @@ client = MongoClient()
 client = MongoClient('mongodb+srv://app:cs411@cluster0-illu3.mongodb.net/test?retryWrites=true')
 db = client.database
 cachedtweets = db.cachedtweets
+users = db.users
 
 app = Flask(__name__)
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+
 @app.route('/oldindex')
 def oldindex():
     return render_template('index.html')
@@ -133,19 +143,61 @@ def getSentiment(tweets):
         score = t['score']*100
         score = "{0:.2f}".format(score)     
         tones.append((name, score))
-    print(tones)
+    return normalize(tones)
+
+def normalize(tones):
+    if len(tones) > 1:
+        total_mag = 0
+        for name,score in tones: 
+            total_mag += math.sqrt(float(score)**2)
+
+        for idx,val in enumerate(tones):
+            score = val[1]
+            score = (float(score)/total_mag)*100
+            score = "{0:.2f}".format(score)   
+            tones[idx] = (val[0], score)
     return tones
+        
+'''
+helper function for matching stock symbols 
+with their stock name 
+'''
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
 
 def getQuote(query):
+
+    #stock market closed on weekends, so if querying on weekend, get friday value
     yesterday = date.today() - timedelta(days=1)
-    querystring = {"function":"TIME_SERIES_DAILY","symbol":query,"interval":"5min","apikey":"N9U9SP687FD676TQ"}
-    headers = {
-        'Content-Type': "application/json",
-        'cache-control': "no-cache",
-        'Postman-Token': "5284e93d-daa8-4884-9aff-b14c160f5a9b"
-        }
-    response = requests.request("GET", stockURL, headers=headers, params=querystring)
-    quotes = [response.json()["Time Series (Daily)"][str(yesterday)]["4. close"]]
+    if yesterday.weekday()==5: 
+        yesterday = yesterday - timedelta(days=1)
+    if yesterday.weekday()==6:
+        yesterday = yesterday - timedelta(days=2)
+
+    #if query is 'Apple' instead of 'AAPL'
+    if query not in company_df[['Symbol']].values.tolist():
+        #get symbol 
+        company=company_df[company_df['Name'].str.lower().str.contains(str(query).lower())]
+        print('company: ', company)
+        if company.empty: 
+            # return None
+            return 'None'
+        else:
+            query = company['Symbol'].iloc[0]
+    try:
+        querystring = {"function":"TIME_SERIES_DAILY","symbol":query,"interval":"5min","apikey":"N9U9SP687FD676TQ"}
+        headers = {
+            'Content-Type': "application/json",
+            'cache-control': "no-cache",
+            'Postman-Token': "5284e93d-daa8-4884-9aff-b14c160f5a9b"
+            }
+        response = requests.request("GET", stockURL, headers=headers, params=querystring)
+        quotes = [response.json()["Time Series (Daily)"][str(yesterday)]["4. close"]]
+
+    #couldn't find stock/company so return error message to user 
+    except KeyError as e:
+        quotes = 'None'
+
     return quotes
 
 def getChartData(stock, function, interval):
@@ -179,25 +231,87 @@ def chart():
         interval = request.args.get('interval')
     else:
         interval = function.replace('TIME_SERIES_', '').title()
-
-    json_data = getChartData(stock, function, interval)
-    labels = []
-    values = []
-
-    if("Daily" in interval or "min" in interval):
-        text = 'Time Series (%s)' % (interval)
-    else:
-        text = '%s Time Series' % (interval)
-
-    for d in json_data[text]:
-        labels.append(d)
-        values.append(json_data[text][d]['4. close'])
-    labels.reverse()
-    tweets = getTweets(stock)
+@app.route('/search', methods=['GET'])
+def searchResults(): 
+    query = request.args.get('query')
+    tweets = getTweets(query)
+    quotes = getQuote(query)
     tones = getSentiment(tweets)
-    return render_template('search.html', userName = "Test", tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ")
+    print('quote: ', quotes)
+    return render_template('search.html', tweets = tweets, quotes = quotes, query = query, tones = tones)
+
+'''
+method to log user in
+'''
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.form['email']
+    password = request.form['password']
+    if userExists(email, password):
+        user = db.users.find_one({'email': email})
+        session['name'] = user['name']
+        return render_template('home.html', name = user['name'], loggedIn = True)
+    print('')
+    print("User doesn't exist or password is inccorect.")
+    return render_template('home.html', error = True, error_message = "Credentials don't match")
+
+
+@app.route('/call_modal', methods=['GET', 'POST'])
+def call_modal():
+    redirect(url_for('index') + '#myModal')
+
+
+'''
+method for user to sign up
+''' 
+@app.route('/signup', methods=['POST'])
+def signUp():
+    if request.method == 'POST':
+        email = request.form['email']
+        name = request.form['name']
+        pw = generate_password_hash(request.form['password'])
+        addUser(name, email, pw)
+        return render_template('home.html', loggedIn = True, name = name)
+
+'''
+method for user to logout 
+'''
+@app.route('/logout')
+def logout(): 
+    # remove the username from the session if it is there
+   session.pop('name', None)
+   return render_template('home.html', loggedIn = False)
+
+
+'''
+Add user to database if user not already in database 
+password is already hashed 
+'''
+def addUser(name, email, password):
+    if userExists(email,password) == False:
+        doc = {'name': name, 'email': email,'password' : password}
+        db.users.insert_one(doc)
+        print("Sucessfully added user!")
+    else:
+        print("User already exists!")
+
+
+'''
+Check if user exists in database, returns true/false
+email and password must match
+'''
+def userExists(email, password):
+    user = db.users.find_one({'email': email})
+    if user is None: 
+        return False
+    else: 
+        checkPassword = check_password_hash(str(user['password']), str(password))
+        if checkPassword:
+            return True
+        else: 
+            return False 
+
+
 
 if __name__ == '__main__':
     app.run(debug=true)
-
-
