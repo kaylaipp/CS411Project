@@ -7,7 +7,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>AdminLTE 2 | Starter</title>
+  <title>Stock Sentiment Search</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.js"></script>
   <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -39,43 +39,96 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
 </head>
-<body>
-    <div class="container">
-        <div class="jumbotron">
-            <h1 style="text-align:center;">{{ query }} <br/>
-                <small>
-                    {{quotes}}
-                    {% if quotes == "None" %}
-                        <h3>Coudn't find that company, please try again!</h3>
-                    {% else %}
+<!--
+BODY TAG OPTIONS:
+=================
+Apply one or more of the following classes to get the
+desired effect
+|---------------------------------------------------------|
+| SKINS         | skin-blue                               |
+|               | skin-black                              |
+|               | skin-purple                             |
+|               | skin-yellow                             |
+|               | skin-red                                |
+|               | skin-green                              |
+|---------------------------------------------------------|
+|LAYOUT OPTIONS | fixed                                   |
+|               | layout-boxed                            |
+|               | layout-top-nav                          |
+|               | sidebar-collapse                        |
+|               | sidebar-mini                            |
+|---------------------------------------------------------|
+-->
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
 
-                    {% endif %}
-                </small>
-            </h1>
-
-            <h2 style="text-align:center;">Tone: <br/>
-                <small>
-                    {% for tone,score in tones %}
-                        {{ score }}% {{ tone }} <br>
-                    {% endfor %}
-                </small>
-            </h1>
+{% include 'partials/mainHeader.html' %}
+  <!-- Left side column. contains the logo and sidebar -->
+{% include 'partials/mainSidebar.html' %}
 
 
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Tweets</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for tweet in tweets %}
-                    <tr>
-                        <td> {{ tweet }} </td>
-                    </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+
+    <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        Stock Sentiment for {{ query }}
+        <small></small>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">{{ query }}</li>
+      </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="row">
+
+
+        <!-- /.col (LEFT) -->
+        <div class="col-md-12">
+          <!-- LINE CHART -->
+          <div class="box box-info">
+            <div class="box-header with-border">
+              <h3 class="box-title">Historical Price {{ interval }}</h3>
+
+              <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+              </div>
+            </div>
+            <div class="box-body">
+              <div class="chart">
+                <canvas id="lineChart" style="height:250px"></canvas>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+
+          <!-- BAR CHART -->
+          <div class="box box-success">
+            <div class="box-header with-border">
+              <h3 class="box-title">Stock Sentiment</h3>
+
+              <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+              </div>
+            </div>
+            <div class="box-body">
+              <div class="chart">
+                <canvas id="barChart" style="height:230px"></canvas>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+
         </div>
         <!-- /.col (RIGHT) -->
       </div>
@@ -111,7 +164,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
     var chart = new Chart(ctx, {
         // The type of chart we want to create
         type: 'line',
-
         // The data for our dataset
         data: {
             labels: [{% for item in labels %}
@@ -126,7 +178,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 {% endfor %}],
             }]
         },
-
         // Configuration options go here
         options: {
             scales: {
@@ -149,8 +200,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
             }
         }
     });
-
-
     var ctx2 = document.getElementById('barChart')
     var myBarChart = new Chart(ctx2, {
       type: 'bar',
@@ -192,8 +241,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
         }
       }
     });
-
-
     function getRandomColor() {
     var letters = '0123456789ABCDEF'.split('');
     var color = '#';
@@ -202,7 +249,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
     }
     return color;
 }
-
 </script>
 
 </body>

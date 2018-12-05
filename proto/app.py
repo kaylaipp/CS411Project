@@ -217,6 +217,34 @@ def getChartData(stock, function, interval):
     return json.loads(res.text, object_pairs_hook=OrderedDict)
 
 
+    #NOT STABLE RN
+@app.route('/chart', methods=['get'])
+def chart():
+    stock = request.args.get('stock')
+    function = request.args.get('function')
+    if(function == "TIME_SERIES_INTRADAY"):
+        interval = request.args.get('interval')
+    else:
+        interval = function.replace('TIME_SERIES_', '').title()
+
+    json_data = getChartData(stock, function, interval)
+    labels = []
+    values = []
+
+    if("Daily" in interval or "min" in interval):
+        text = 'Time Series (%s)' % (interval)
+    else:
+        text = '%s Time Series' % (interval)
+
+    for d in json_data[text]:
+        labels.append(d)
+        values.append(json_data[text][d]['4. close'])
+    labels.reverse()
+    tweets = getTweets(stock)
+    tones = getSentiment(tweets)
+    return render_template('search.html', userName = "Test", tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ")
+
+
 ##########
 ################# ROUTES START HERE ##############################
 ##########
