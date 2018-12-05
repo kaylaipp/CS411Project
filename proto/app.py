@@ -305,5 +305,4 @@ def userExists(email, password):
 
 
 if __name__ == '__main__':
-
-
+    app.run(debug=true)
