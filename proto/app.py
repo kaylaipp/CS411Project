@@ -54,14 +54,6 @@ users = db.users
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
-@app.route('/oldindex')
-def oldindex():
-    return render_template('index.html')
-
-@app.route('/')
-def mainPage():
-    return render_template('home.html')
-
 '''
 this authorizes our developer account 
 '''
@@ -341,6 +333,12 @@ def call_modal():
 ##########
 ################# ROUTES START HERE ##############################
 ##########
+
+
+@app.route('/')
+def mainPage():
+    return render_template('home.html')
+
 
  #NOT STABLE RN
 @app.route('/chart', methods=['get'])
