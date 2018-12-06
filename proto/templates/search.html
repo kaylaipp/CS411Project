@@ -62,10 +62,15 @@ desired effect
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
 
+
+
+
+{% with userName = name, loggedIn = loggedIn, pic_url = pic_url %}
 {% include 'partials/mainHeader.html' %}
+{% endwith %}
+
   <!-- Left side column. contains the logo and sidebar -->
 {% include 'partials/mainSidebar.html' %}
-
 
 
     <!-- Content Wrapper. Contains page content -->

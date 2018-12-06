@@ -1,6 +1,6 @@
 import tweepy
 import json
-from collections import OrderedDict
+import flask
 from flask import Flask, render_template, Response, request, redirect, url_for, session,flash
 import re
 from random import randint
@@ -14,21 +14,26 @@ import datetime, pprint
 from flask_pymongo import PyMongo
 from pymongo import MongoClient   #docs: http://api.mongodb.com/python/current/index.html
 from werkzeug.security import generate_password_hash, check_password_hash
-from difflib import SequenceMatcher
 import pandas as pd
+from collections import OrderedDict
+# from flask_oauth import OAuth
 
 #read in stock symbols/company name csv
 company_list = pd.read_csv("full.csv")
-
 
 #twitter authentication - put keys in config.py & gitignore 
 CONSUMER_KEY = config.consumer_key
 CONSUMER_SECRET = config.consumer_secret
 ACCESS_KEY = config.access_token_key
 ACCESS_SECRET = config.access_token_secret
+
 auth = tweepy.auth.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 twitter_api = tweepy.API(auth)
+
+callback_url = 'http://localhost:5000/verify'
+session = {}
+db = {}
 
 #IBM Watson authentication & connnection - keys in config.py
 tone_analyzer = ToneAnalyzerV3(
@@ -56,6 +61,53 @@ def oldindex():
 @app.route('/')
 def mainPage():
     return render_template('home.html')
+
+'''
+this authorizes our developer account 
+'''
+@app.route("/twitter")
+def send_token():
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET, callback_url)
+    redirect_url = auth.get_authorization_url()
+    try:
+        session['oauth_token'] = auth.request_token['oauth_token']
+        session['oauth_token_secret'] = auth.request_token['oauth_token_secret']
+    except tweepy.TweepError as e:
+        print('Error! Failed to get request token.')
+
+    #redirect user to twitter so they can authenticate w/ their account
+    return flask.redirect(redirect_url)
+
+@app.route("/verify")
+def get_verification():
+    verifier = request.args.get('oauth_verifier')
+    # auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    auth.request_token = { 'oauth_token' : session['oauth_token'],
+                             'oauth_token_secret' : session['oauth_token_secret'] }
+
+    try:
+        auth.get_access_token(verifier)
+        session['access_token'] = auth.access_token
+        session['access_token_secret'] = auth.access_token_secret
+    except tweepy.TweepError as e:
+        print('e: ',e)
+        print('Error! Failed to get access token.')
+
+    auth.set_access_token(session['access_token'], session['access_token_secret'])
+    api = tweepy.API(auth)
+    user = api.me()
+    user_str = json.dumps(user._json)
+    user_info = json.loads( user_str)
+    name = user_info['name']
+    session['profile_image_url'] = user_info['profile_image_url']
+
+    loginTwitter(user_info, session['access_token'])
+
+    # return flask.redirect(flask.url_for('mainPage'))
+    return render_template('home.html', loggedIn = True, name = name)
+
+
 
 
 #this function actually gets & returns list of tweets
@@ -223,7 +275,6 @@ def getChartData(stock, function, interval):
     #NOT STABLE RN
 @app.route('/chart', methods=['get'])
 def chart():
-
     #convert company name to symbol 'AMAZON -> 'AMZN'
     stock = request.args.get('stock')
     if stock.upper() not in company_list[['Symbol']].values.flatten().tolist():
@@ -258,7 +309,22 @@ def chart():
     labels.reverse()
     tweets = getTweets(stock)
     tones = getSentiment(tweets)
-    return render_template('search.html', userName = "Test", tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ")
+
+    loggedIn = False
+    name = ""
+    try:
+        if session['name'] is not None:
+            loggedIn = True
+            name = session['name']
+            pic_url = session['profile_image_url']
+    except KeyError as e: 
+        loggedIn = False
+        name = ""
+        pic_url = ""
+
+    return render_template('search.html', userName = "Test", tones = tones, 
+    labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", 
+    loggedIn = loggedIn, name = name, pic_url = pic_url)
 
 
 ##########
@@ -290,6 +356,25 @@ def login():
     print("User doesn't exist or password is inccorect.")
     return render_template('home.html', error = True, error_message = "Credentials don't match")
 
+'''
+login via credentials from twitter
+search user db for 
+'''
+def loginTwitter(user, access_key_twitter):
+    print('')
+    print('------loggin twitter------')
+    print('user: ', user)
+    print('')
+    if userExistsTwitter(user['screen_name'], access_key_twitter):
+        print('user already in db!')
+        user = db.users.find_one({'email': user['screen_name']})
+        session['name'] = user['name']
+        # return render_template('home.html', name = user['name'], loggedIn = True)
+    else: 
+        addUser(user['name'], user['screen_name'], access_key_twitter)
+
+    print('-------------------------')
+    return render_template('home.html', error = False, name = user['name'], loggedIn = True)
 
 @app.route('/call_modal', methods=['GET', 'POST'])
 def call_modal():
@@ -345,6 +430,17 @@ def userExists(email, password):
             return True
         else: 
             return False 
+
+def userExistsTwitter(username, access_token):
+    user = db.users.find_one({'email': username})
+    print('user: ', user)
+    if user is None: 
+        return False
+    else: 
+        if user['password'] == access_token: 
+            return True
+        else:
+            return False
 
 
 

@@ -1,4 +1,9 @@
-  <!-- Main Header -->
+  
+    <!-- Custom styles for this template -->
+    <!-- <link href="{{ url_for('static',filename='css/coming-soon.css') }}" rel="stylesheet"> -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+  
+    <!-- Main Header -->
   <header class="main-header">
 
     <!-- Logo -->
@@ -18,40 +23,45 @@
       <!-- Navbar Right Menu -->
       <div class="navbar-custom-menu">
         <ul class="nav navbar-nav">
-          <!-- User Account Menu -->
-          <li class="dropdown user user-menu">
-            <!-- Menu Toggle Button -->
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-              <!-- The user image in the navbar-->
-              <img src="{{ url_for('static',filename='img/user2-160x160.jpg')}}" class="user-image" alt="User Image">
-              <!-- hidden-xs hides the username on small devices so only the image appears. -->
-              <span class="hidden-xs">{{ userName }}</span>
-            </a>
-            <ul class="dropdown-menu">
-              <!-- The user image in the menu -->
-              <li class="user-header">
-                <img src="{{ url_for('static',filename='img/user2-160x160.jpg')}}" class="img-circle" alt="User Image">
+          
+          <!-- if logged in, show name & profile pic -->
+          {% if loggedIn %}
+            <!-- User Account Menu -->
+            <li class="dropdown user user-menu">
+              <!-- Menu Toggle Button -->
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                <!-- The user image in the navbar-->
+                <!-- <img src="{{ url_for('static',filename='img/user2-160x160.jpg')}}" class="user-image" alt="User Image"> -->
+                <img src="{{pic_url}}" class="user-image" alt="User Image">
+                <!-- hidden-xs hides the username on small devices so only the image appears. -->
+                <span class="hidden-xs">{{ userName }}</span>
+              </a>
+              <ul class="dropdown-menu">
+                <!-- The user image in the menu -->
+                <li class="user-header">
+                  <!-- <img src="{{ url_for('static',filename='img/user2-160x160.jpg')}}" class="img-circle" alt="User Image"> -->
+                  <img src="{{pic_url}}" class="img-circle" alt="User Image">
 
-                <p>
-                  {{ userName }}
-                  <small>Member since Nov. 2012</small>
-                </p>
-              </li>
-              <!-- Menu Body
-              <li class="user-body">
-                <div class="row">
-                  <div class="col-xs-4 text-center">
-                    <a href="#">Followers</a>
-                  </div>
-                  <div class="col-xs-4 text-center">
-                    <a href="#">Sales</a>
-                  </div>
-                  <div class="col-xs-4 text-center">
-                    <a href="#">Friends</a>
-                  </div>
-                </div>-->
-                <!-- /.row -->
-              </li>
+                  <p>
+                    {{ userName }}
+                    <small>Member since Nov. 2012</small>
+                  </p>
+                </li>
+                <!-- Menu Body
+                <li class="user-body">
+                  <div class="row">
+                    <div class="col-xs-4 text-center">
+                      <a href="#">Followers</a>
+                    </div>
+                    <div class="col-xs-4 text-center">
+                      <a href="#">Sales</a>
+                    </div>
+                    <div class="col-xs-4 text-center">
+                      <a href="#">Friends</a>
+                    </div>
+                  </div>-->
+                  <!-- /.row -->
+                </li>
               <!-- Menu Footer-->
               <li class="user-footer">
                   <!--
@@ -59,10 +69,15 @@
                   <a href="#" class="btn btn-default btn-flat">Profile</a>
                 </div>
                 -->
-                <div class="pull-right">
-                  <a href="#" class="btn btn-default btn-flat">Sign out</a>
-                </div>
+                  <div class="pull-right">
+                    <a href="/logout" class="btn btn-default btn-flat">Sign out</a>
+                  </div>
               </li>
+
+              {%else%}
+            <button type="button" class="btn" style="background-color:transparent; margin-top:2.5%;" data-toggle="modal" data-target="#loginModal">
+            Log in </button>
+              {%endif%}
             </ul>
           </li>
           <!-- Control Sidebar Toggle Button
@@ -74,3 +89,108 @@
       </div>
     </nav>
   </header>
+
+
+  <!-- Login pop up modal --> 
+  <div class="container">
+      <div class="modal fade login" id="loginModal">
+           <div class="modal-dialog login animated">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <h4 class="modal-title">Login</h4>
+                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                         
+                     </div>
+                     <div class="modal-body">  
+                         <div class="box">
+                              <div class="content">
+                                 <div class="social">
+                                     <a class="circle github" href="/twitter">
+                                         <i class="fab fa-twitter"></i>
+                                     </a>
+                                 </div>
+                                 <div class="division">
+                                     <div class="line l"></div>
+                                       <span>or</span>
+                                     <div class="line r"></div>
+                                 </div>
+                                 <div class="error">
+                                   {% if error %}
+                                       <h4>{{error_message}}</h4>
+                                   {% endif %}
+                                 </div>
+                                 <div class="form loginBox">
+                                     <!-- <form action="/login" method="GET" accept-charset="UTF-8"> -->
+                                     <form method="POST" action="/login" accept-charset="UTF-8">
+   
+                                     <input id="email" class="form-control" type="text" placeholder="Email" name="email"> 
+                                     <input id="password" class="form-control" type="password" placeholder="Password" name="password">
+                                     <input class="btn btn-default btn-login" type="submit" value="Login" style = "color: white;">
+                                     <!-- <input class="btn btn-default btn-login" type="button" onclick="javascript: someFunctionThatCouldIncludeRedirect();" value="Login" > -->
+                                     
+                                     </form>
+                                 </div>
+                              </div>
+                         </div>
+                     </div>
+                     <div class="modal-footer">
+                         <div class="forgot login-footer">
+                             <span>Looking to 
+                                  <a href="/" data-toggle="modal" data-target="#signUpModal" data-dismiss="modal">create an account</a>
+                             ?</span>
+                         </div>
+                     </div>        
+               </div>
+           </div>
+       </div>
+     </div>
+   
+     <!-- sign up modal -->
+     <div class="container">
+         <div class="modal fade login" id="signUpModal">
+              <div class="modal-dialog login animated">
+                  <div class="modal-content">
+                     <div class="modal-header">
+                        <h4 class="modal-title" style="text-align:center">Signup</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            
+                        </div>
+                        <div class="modal-body">  
+                            <div class="box">
+                                 <div class="content">
+                                    <div class="social">
+                                       <a class="circle github" href="/twitter">
+                                           <i class="fab fa-twitter"></i>
+                                       </a>
+                                    </div>
+                                    <div class="division">
+                                        <div class="line l"></div>
+                                          <span>or</span>
+                                        <div class="line r"></div>
+                                    </div>
+                                    <div class="error"></div>
+                                    <div class="content registerBox" id="signUpModal">
+                                       <div class="form">
+                                          <form method="POST" html="{:multipart=>true}" data-remote="true" action="/signup" accept-charset="UTF-8">
+                                          <input id="email" class="form-control" type="text" placeholder="Email" name="email">
+                                          <input id="name" class="form-control" type="text" placeholder="Name" name="name">
+                                          <input id="password" class="form-control" type="password" placeholder="Password" name="password">
+                                          <input id="password_confirmation" class="form-control" type="password" placeholder="Repeat Password" name="password_confirmation">
+                                          <input class="btn btn-default btn-register" type="submit" value="Create account" name="commit">
+                                          </form>
+                                          </div>
+                                      </div>
+                                 </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="forgot register-footer">
+                                 <span>Already have an account?</span>
+                                 <a href="/" data-toggle="modal" data-target="#loginModal" data-dismiss="modal">Login</a>
+                            </div>
+                        </div>        
+                  </div>
+              </div>
+          </div>
+        </div>
+  
