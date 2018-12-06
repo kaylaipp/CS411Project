@@ -272,21 +272,91 @@ def getChartData(stock, function, interval):
     return json.loads(res.text, object_pairs_hook=OrderedDict)
 
 
-    #NOT STABLE RN
+
+
+'''
+Add user to database if user not already in database 
+password is already hashed 
+'''
+def addUser(name, email, password):
+    if userExists(email,password) == False:
+        doc = {'name': name, 'email': email,'password' : password}
+        db.users.insert_one(doc)
+        print("Sucessfully added user!")
+    else:
+        print("User already exists!")
+
+
+'''
+Check if user exists in database, returns true/false
+email and password must match
+'''
+def userExists(email, password):
+    user = db.users.find_one({'email': email})
+    if user is None:
+        return False
+    else:
+        checkPassword = check_password_hash(str(user['password']), str(password))
+        if checkPassword:
+            return True
+        else:
+            return False
+
+def userExistsTwitter(username, access_token):
+    user = db.users.find_one({'email': username})
+    print('user: ', user)
+    if user is None:
+        return False
+    else:
+        if user['password'] == access_token:
+            return True
+        else:
+            return False
+
+'''
+login via credentials from twitter
+search user db for 
+'''
+def loginTwitter(user, access_key_twitter):
+    print('')
+    print('------loggin twitter------')
+    print('user: ', user)
+    print('')
+    if userExistsTwitter(user['screen_name'], access_key_twitter):
+        print('user already in db!')
+        user = db.users.find_one({'email': user['screen_name']})
+        session['name'] = user['name']
+        # return render_template('home.html', name = user['name'], loggedIn = True)
+    else:
+        addUser(user['name'], user['screen_name'], access_key_twitter)
+
+    print('-------------------------')
+    return render_template('home.html', error = False, name = user['name'], loggedIn = True)
+
+@app.route('/call_modal', methods=['GET', 'POST'])
+def call_modal():
+    redirect(url_for('index') + '#myModal')
+
+
+##########
+################# ROUTES START HERE ##############################
+##########
+
+ #NOT STABLE RN
 @app.route('/chart', methods=['get'])
 def chart():
     #convert company name to symbol 'AMAZON -> 'AMZN'
     stock = request.args.get('stock')
     if stock.upper() not in company_list[['Symbol']].values.flatten().tolist():
-        #get symbol 
+        #get symbol
         company=company_list[company_list['Name'].str.lower().str.contains(str(stock).lower())]
         print('company: ', company)
-        if company.empty: 
+        if company.empty:
             stock = 'None'
         else:
             stock = company['Symbol'].iloc[0]
-    else: 
-        stock = stock 
+    else:
+        stock = stock
 
     function = request.args.get('function')
     if(function == "TIME_SERIES_INTRADAY"):
@@ -317,19 +387,12 @@ def chart():
             loggedIn = True
             name = session['name']
             pic_url = session['profile_image_url']
-    except KeyError as e: 
+    except KeyError as e:
         loggedIn = False
         name = ""
         pic_url = ""
 
-    return render_template('search.html', userName = "Test", tones = tones, 
-    labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", 
-    loggedIn = loggedIn, name = name, pic_url = pic_url)
-
-
-##########
-################# ROUTES START HERE ##############################
-##########
+    return render_template('search.html', userName ="Test", tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = loggedIn, name = name, pic_url = pic_url)
 
 
 @app.route('/search', methods=['GET'])
@@ -356,29 +419,6 @@ def login():
     print("User doesn't exist or password is inccorect.")
     return render_template('home.html', error = True, error_message = "Credentials don't match")
 
-'''
-login via credentials from twitter
-search user db for 
-'''
-def loginTwitter(user, access_key_twitter):
-    print('')
-    print('------loggin twitter------')
-    print('user: ', user)
-    print('')
-    if userExistsTwitter(user['screen_name'], access_key_twitter):
-        print('user already in db!')
-        user = db.users.find_one({'email': user['screen_name']})
-        session['name'] = user['name']
-        # return render_template('home.html', name = user['name'], loggedIn = True)
-    else: 
-        addUser(user['name'], user['screen_name'], access_key_twitter)
-
-    print('-------------------------')
-    return render_template('home.html', error = False, name = user['name'], loggedIn = True)
-
-@app.route('/call_modal', methods=['GET', 'POST'])
-def call_modal():
-    redirect(url_for('index') + '#myModal')
 
 
 '''
@@ -402,45 +442,6 @@ def logout():
    session.pop('name', None)
    return render_template('home.html', loggedIn = False)
 
-
-'''
-Add user to database if user not already in database 
-password is already hashed 
-'''
-def addUser(name, email, password):
-    if userExists(email,password) == False:
-        doc = {'name': name, 'email': email,'password' : password}
-        db.users.insert_one(doc)
-        print("Sucessfully added user!")
-    else:
-        print("User already exists!")
-
-
-'''
-Check if user exists in database, returns true/false
-email and password must match
-'''
-def userExists(email, password):
-    user = db.users.find_one({'email': email})
-    if user is None: 
-        return False
-    else: 
-        checkPassword = check_password_hash(str(user['password']), str(password))
-        if checkPassword:
-            return True
-        else: 
-            return False 
-
-def userExistsTwitter(username, access_token):
-    user = db.users.find_one({'email': username})
-    print('user: ', user)
-    if user is None: 
-        return False
-    else: 
-        if user['password'] == access_token: 
-            return True
-        else:
-            return False
 
 
 
