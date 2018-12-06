@@ -390,7 +390,7 @@ def chart():
         name = ""
         pic_url = ""
 
-    return render_template('search.html', userName ="Test", tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = loggedIn, name = name, pic_url = pic_url)
+    return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = loggedIn,  pic_url = pic_url)
 
 
 @app.route('/search', methods=['GET'])
