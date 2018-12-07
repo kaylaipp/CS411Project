@@ -108,8 +108,8 @@ def get_verification():
 #this function actually gets & returns list of tweets
 def getTweetsHelper(query):
     #exclude retweets & get full text of tweets 
-    q = query + ' -filter:retweets'
-    search_results = twitter_api.search(q, count=10, tweet_mode = 'extended', lang = 'en')
+    q = query + ' AND stock' + ' -filter:retweets'
+    search_results = twitter_api.search(q, count=30, tweet_mode = 'extended', lang = 'en', result_type = 'mixed')
     tweets = []
     for tweet in search_results:
         tweet = tweet.full_text
