@@ -15,6 +15,7 @@ from flask_pymongo import PyMongo
 from pymongo import MongoClient   #docs: http://api.mongodb.com/python/current/index.html
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
+import os
 from collections import OrderedDict
 # from flask_oauth import OAuth
 
@@ -92,6 +93,8 @@ def get_verification():
     user_str = json.dumps(user._json)
     user_info = json.loads( user_str)
     name = user_info['name']
+    session['loginTwitter'] = True
+    session['regLogin'] = False
     session['profile_image_url'] = user_info['profile_image_url']
 
     loginTwitter(user_info, session['access_token'])
@@ -310,10 +313,7 @@ login via credentials from twitter
 search user db for 
 '''
 def loginTwitter(user, access_key_twitter):
-    print('')
-    print('------loggin twitter------')
-    print('user: ', user)
-    print('')
+    print('session: ', session)
     if userExistsTwitter(user['screen_name'], access_key_twitter):
         print('user already in db!')
         user = db.users.find_one({'email': user['screen_name']})
@@ -378,19 +378,20 @@ def chart():
     tweets = getTweets(stock)
     tones = getSentiment(tweets)
 
-    loggedIn = False
-    name = ""
     try:
-        if session['name'] is not None:
+        if session['name'] is not None or session['loggedIn']:
             loggedIn = True
             name = session['name']
-            pic_url = session['profile_image_url']
+            if session['loginTwitter']:
+                pic_url = session['profile_image_url']
+            else: 
+                pic_url = url_for('static',filename='img/Blank_Avatar.png')
+            return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = True,  pic_url = pic_url)
     except KeyError as e:
         loggedIn = False
         name = ""
-        pic_url = ""
-
-    return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = loggedIn,  pic_url = pic_url)
+        pic_url = url_for('static',filename='img/Blank_Avatar.png')
+        return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = False,  pic_url = pic_url)
 
 
 @app.route('/search', methods=['GET'])
@@ -412,11 +413,14 @@ def login():
     if userExists(email, password):
         user = db.users.find_one({'email': email})
         session['name'] = user['name']
+        session['loggedIn'] = True
+        session['regLogin'] = True
+        session['loginTwitter'] = False
+        print('session after login: ', session)
         return render_template('home.html', name = user['name'], loggedIn = True)
     print('')
     print("User doesn't exist or password is inccorect.")
     return render_template('home.html', error = True, error_message = "Credentials don't match")
-
 
 
 '''
@@ -438,6 +442,8 @@ method for user to logout
 def logout(): 
     # remove the username from the session if it is there
    session.pop('name', None)
+   
+   print('session after logout: ', session)
    return render_template('home.html', loggedIn = False)
 
 
