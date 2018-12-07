@@ -142,7 +142,6 @@ def getTweets(query):
         cached_time = cache['time']
         limit = cached_time + datetime.timedelta(minutes=360)
         diff = (current_time - cached_time).total_seconds()
-        print('diff: ', diff)
 
         if diff < 900:
             print('')
@@ -207,8 +206,6 @@ def normalize(tones):
 helper function for matching stock symbols 
 with their stock name 
 '''
-def similar(a, b):
-    return SequenceMatcher(None, a, b).ratio()
 
 def getQuote(query):
 
@@ -223,7 +220,7 @@ def getQuote(query):
     if query not in company_list[['Symbol']].values.tolist():
         #get symbol 
         company=company_list[company_list['Name'].str.lower().str.contains(str(query).lower())]
-        print('company: ', company)
+
         if company.empty: 
             # return None
             return 'None'
@@ -252,8 +249,6 @@ def getChartData(stock, function, interval):
         interval = "1min"
     if(stock ==""):
         stock="AAPL"
-    print('')
-    print('stock: ', stock)
     querystring = {"function": function, "symbol": stock, "interval":interval, "apikey": "N9U9SP687FD676TQ"}
     headers = {
         'Content-Type': "application/json",
@@ -296,7 +291,6 @@ def userExists(email, password):
 
 def userExistsTwitter(username, access_token):
     user = db.users.find_one({'email': username})
-    print('user: ', user)
     if user is None:
         return False
     else:
@@ -310,10 +304,6 @@ login via credentials from twitter
 search user db for 
 '''
 def loginTwitter(user, access_key_twitter):
-    print('')
-    print('------loggin twitter------')
-    print('user: ', user)
-    print('')
     if userExistsTwitter(user['screen_name'], access_key_twitter):
         print('user already in db!')
         user = db.users.find_one({'email': user['screen_name']})
@@ -322,7 +312,6 @@ def loginTwitter(user, access_key_twitter):
     else:
         addUser(user['name'], user['screen_name'], access_key_twitter)
 
-    print('-------------------------')
     return render_template('home.html', error = False, name = user['name'], loggedIn = True)
 
 @app.route('/call_modal', methods=['GET', 'POST'])
@@ -340,7 +329,6 @@ def mainPage():
     return render_template('home.html')
 
 
- #NOT STABLE RN
 @app.route('/chart', methods=['get'])
 def chart():
     #convert company name to symbol 'AMAZON -> 'AMZN'
@@ -348,7 +336,6 @@ def chart():
     if stock.upper() not in company_list[['Symbol']].values.flatten().tolist():
         #get symbol
         company=company_list[company_list['Name'].str.lower().str.contains(str(stock).lower())]
-        print('company: ', company)
         if company.empty:
             stock = 'None'
         else:
@@ -387,8 +374,8 @@ def chart():
             pic_url = session['profile_image_url']
     except KeyError as e:
         loggedIn = False
-        name = ""
-        pic_url = ""
+        name = "guest"
+        pic_url = url_for('static', filename='img/default.png')
 
     return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = loggedIn,  pic_url = pic_url)
 
@@ -399,7 +386,6 @@ def searchResults():
     tweets = getTweets(query)
     quotes = getQuote(query)
     tones = getSentiment(tweets)
-    print('quote: ', quotes)
     return render_template('search.html', tweets = tweets, quotes = quotes, query = query, tones = tones)
 
 '''
