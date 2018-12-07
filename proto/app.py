@@ -46,7 +46,7 @@ stockURL = "https://www.alphavantage.co/query"
 #connect to mongo server 
 #create cachedtweets collection for caching 
 client = MongoClient()
-client = MongoClient('mongodb+srv://app:cs411@cluster0-illu3.mongodb.net/test?retryWrites=true')
+client = MongoClient('mongodb://app:1234@cluster0-shard-00-00-illu3.mongodb.net:27017,cluster0-shard-00-01-illu3.mongodb.net:27017,cluster0-shard-00-02-illu3.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true')
 db = client.database
 cachedtweets = db.cachedtweets
 users = db.users
