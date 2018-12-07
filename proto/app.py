@@ -16,10 +16,16 @@ from pymongo import MongoClient   #docs: http://api.mongodb.com/python/current/i
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 from collections import OrderedDict
+from wtforms import TextField, Form
 # from flask_oauth import OAuth
 
 #read in stock symbols/company name csv
 company_list = pd.read_csv("full.csv")
+
+cities = ["ABC",
+          "DEF",
+          "XYZ"
+          ]
 
 #twitter authentication - put keys in config.py & gitignore 
 CONSUMER_KEY = config.consumer_key
@@ -335,10 +341,24 @@ def call_modal():
 ##########
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def mainPage():
-    return render_template('home.html')
+    form = SearchForm(request.form)
+    return render_template('home.html', form=form)
 
+class SearchForm(Form):
+    autocomp = TextField('', id='city_autocomplete')
+
+
+@app.route('/_autocomplete', methods=['GET'])
+def autocomplete():
+    return Response(json.dumps(cities), mimetype='application/json')
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    form = SearchForm(request.form)
+    return render_template("search.html", form=form)
 
  #NOT STABLE RN
 @app.route('/chart', methods=['get'])
@@ -444,4 +464,4 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run(debug=true)
+    app.run(debug=True)
