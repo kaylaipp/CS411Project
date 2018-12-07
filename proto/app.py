@@ -417,7 +417,5 @@ def loginTwitter(user, access_key_twitter):
     return render_template('home.html', error = False, name = user['name'], loggedIn = True)
 
 
-
-
 if __name__ == '__main__':
     app.run(debug=true)
