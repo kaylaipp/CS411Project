@@ -137,7 +137,6 @@ def getTweets(query):
                 'time'  : current_time,
                 'tweets': tweets}
         db.cachedtweets.insert_one(doc)
-        print ('Inserted data successfully')
         return tweets
     else: 
         #check if tweets in db are from within 15 mins
@@ -145,11 +144,8 @@ def getTweets(query):
         cached_time = cache['time']
         limit = cached_time + datetime.timedelta(minutes=360)
         diff = (current_time - cached_time).total_seconds()
-        print('diff: ', diff)
 
         if diff < 900:
-            print('')
-            print('returning cached tweets')
             return cache['tweets']
 
         #otherwise delete old tweets in db and lookup new tweets
@@ -163,10 +159,7 @@ def getTweets(query):
                     'time'  : current_time,
                     'tweets': tweets}
 
-            print('attempting to insert tweet doc')
             id_ = db.cachedtweets.insert_one(doc)
-            print('id: ', id_)
-            print ('Inserted data successfully')
             return tweets
 
 #compute sentiment analysis on gathered tweets 
@@ -226,7 +219,6 @@ def getQuote(query):
     if query not in company_list[['Symbol']].values.tolist():
         #get symbol 
         company=company_list[company_list['Name'].str.lower().str.contains(str(query).lower())]
-        print('company: ', company)
         if company.empty: 
             # return None
             return 'None'
@@ -255,8 +247,6 @@ def getChartData(stock, function, interval):
         interval = "1min"
     if(stock ==""):
         stock="AAPL"
-    print('')
-    print('stock: ', stock)
     querystring = {"function": function, "symbol": stock, "interval":interval, "apikey": "N9U9SP687FD676TQ"}
     headers = {
         'Content-Type': "application/json",
@@ -277,7 +267,6 @@ def addUser(name, email, password):
     if userExists(email,password) == False:
         doc = {'name': name, 'email': email,'password' : password}
         db.users.insert_one(doc)
-        print("Sucessfully added user!")
     else:
         print("User already exists!")
 
@@ -299,7 +288,6 @@ def userExists(email, password):
 
 def userExistsTwitter(username, access_token):
     user = db.users.find_one({'email': username})
-    print('user: ', user)
     if user is None:
         return False
     else:
@@ -313,21 +301,13 @@ login via credentials from twitter
 search user db for 
 '''
 def loginTwitter(user, access_key_twitter):
-    print('session: ', session)
     if userExistsTwitter(user['screen_name'], access_key_twitter):
-        print('user already in db!')
         user = db.users.find_one({'email': user['screen_name']})
         session['name'] = user['name']
-        # return render_template('home.html', name = user['name'], loggedIn = True)
     else:
         addUser(user['name'], user['screen_name'], access_key_twitter)
 
-    print('-------------------------')
     return render_template('home.html', error = False, name = user['name'], loggedIn = True)
-
-@app.route('/call_modal', methods=['GET', 'POST'])
-def call_modal():
-    redirect(url_for('index') + '#myModal')
 
 
 ##########
@@ -348,7 +328,6 @@ def chart():
     if stock.upper() not in company_list[['Symbol']].values.flatten().tolist():
         #get symbol
         company=company_list[company_list['Name'].str.lower().str.contains(str(stock).lower())]
-        print('company: ', company)
         if company.empty:
             stock = 'None'
         else:
@@ -400,7 +379,6 @@ def searchResults():
     tweets = getTweets(query)
     quotes = getQuote(query)
     tones = getSentiment(tweets)
-    print('quote: ', quotes)
     return render_template('search.html', tweets = tweets, quotes = quotes, query = query, tones = tones)
 
 '''
@@ -416,11 +394,9 @@ def login():
         session['loggedIn'] = True
         session['regLogin'] = True
         session['loginTwitter'] = False
-        print('session after login: ', session)
         return render_template('home.html', name = user['name'], loggedIn = True)
-    print('')
-    print("User doesn't exist or password is inccorect.")
-    return render_template('home.html', error = True, error_message = "Credentials don't match")
+    else:
+        return render_template('home.html', error = True, error_message = "Credentials don't match")
 
 
 '''
@@ -442,12 +418,11 @@ method for user to logout
 def logout(): 
     # remove the username from the session if it is there
    session.pop('name', None)
-   
-   print('session after logout: ', session)
+
    return render_template('home.html', loggedIn = False)
 
 
 
 
 if __name__ == '__main__':
-    app.run(debug=true)
+    app.run(debug=True)
