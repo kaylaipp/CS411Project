@@ -54,6 +54,104 @@ users = db.users
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
+
+'''
+#################################################################
+################## ROUTES GO UNDER HERE #########################
+#################################################################
+'''
+
+
+@app.route('/')
+def mainPage():
+    return render_template('home.html')
+
+@app.route('/chart', methods=['get'])
+def chart():
+    #convert company name to symbol 'AMAZON -> 'AMZN'
+    stock = request.args.get('stock')
+    if stock.upper() not in company_list[['Symbol']].values.flatten().tolist():
+        #get symbol
+        company=company_list[company_list['Name'].str.lower().str.contains(str(stock).lower())]
+        if company.empty:
+            stock = 'None'
+        else:
+            stock = company['Symbol'].iloc[0]
+    else:
+        stock = stock
+
+    function = request.args.get('function')
+    if(function == "TIME_SERIES_INTRADAY"):
+        interval = request.args.get('interval')
+    else:
+        interval = function.replace('TIME_SERIES_', '').title()
+
+    json_data = getChartData(stock, function, interval)
+    labels = []
+    values = []
+
+    if("Daily" in interval or "min" in interval):
+        text = 'Time Series (%s)' % (interval)
+    else:
+        text = '%s Time Series' % (interval)
+
+    for d in json_data[text]:
+        labels.append(d)
+        values.append(json_data[text][d]['4. close'])
+    labels.reverse()
+    tweets = getTweets(stock)
+    tones = getSentiment(tweets)
+
+    loggedIn = False
+    name = ""
+    try:
+        if session['name'] is not None:
+            loggedIn = True
+            name = session['name']
+            pic_url = session['profile_image_url']
+    except KeyError as e:
+        loggedIn = False
+        name = "guest"
+        pic_url = url_for('static', filename='img/default.png')
+
+    return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = loggedIn,  pic_url = pic_url)
+
+'''
+method to log user in
+'''
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.form['email']
+    password = request.form['password']
+    if userExists(email, password):
+        user = db.users.find_one({'email': email})
+        session['name'] = user['name']
+        return render_template('home.html', name = user['name'], loggedIn = True)
+    print('')
+    print("User doesn't exist or password is inccorect.")
+    return render_template('home.html', error = True, error_message = "Credentials don't match")
+
+'''
+method for user to sign up
+'''
+@app.route('/signup', methods=['POST'])
+def signUp():
+    if request.method == 'POST':
+        email = request.form['email']
+        name = request.form['name']
+        pw = generate_password_hash(request.form['password'])
+        addUser(name, email, pw)
+        return render_template('home.html', loggedIn = True, name = name)
+
+'''
+method for user to logout 
+'''
+@app.route('/logout')
+def logout():
+    # remove the username from the session if it is there
+   session.pop('name', None)
+   return render_template('home.html', loggedIn = False)
+
 '''
 this authorizes our developer account 
 '''
@@ -100,7 +198,11 @@ def get_verification():
     return render_template('home.html', loggedIn = True, name = name)
 
 
-
+'''
+#################################################################
+############## FUNCTIONS AND HELPER GO HERE #####################
+#################################################################
+'''
 
 #this function actually gets & returns list of tweets
 def getTweetsHelper(query):
@@ -313,118 +415,6 @@ def loginTwitter(user, access_key_twitter):
         addUser(user['name'], user['screen_name'], access_key_twitter)
 
     return render_template('home.html', error = False, name = user['name'], loggedIn = True)
-
-@app.route('/call_modal', methods=['GET', 'POST'])
-def call_modal():
-    redirect(url_for('index') + '#myModal')
-
-
-##########
-################# ROUTES START HERE ##############################
-##########
-
-
-@app.route('/')
-def mainPage():
-    return render_template('home.html')
-
-
-@app.route('/chart', methods=['get'])
-def chart():
-    #convert company name to symbol 'AMAZON -> 'AMZN'
-    stock = request.args.get('stock')
-    if stock.upper() not in company_list[['Symbol']].values.flatten().tolist():
-        #get symbol
-        company=company_list[company_list['Name'].str.lower().str.contains(str(stock).lower())]
-        if company.empty:
-            stock = 'None'
-        else:
-            stock = company['Symbol'].iloc[0]
-    else:
-        stock = stock
-
-    function = request.args.get('function')
-    if(function == "TIME_SERIES_INTRADAY"):
-        interval = request.args.get('interval')
-    else:
-        interval = function.replace('TIME_SERIES_', '').title()
-
-    json_data = getChartData(stock, function, interval)
-    labels = []
-    values = []
-
-    if("Daily" in interval or "min" in interval):
-        text = 'Time Series (%s)' % (interval)
-    else:
-        text = '%s Time Series' % (interval)
-
-    for d in json_data[text]:
-        labels.append(d)
-        values.append(json_data[text][d]['4. close'])
-    labels.reverse()
-    tweets = getTweets(stock)
-    tones = getSentiment(tweets)
-
-    loggedIn = False
-    name = ""
-    try:
-        if session['name'] is not None:
-            loggedIn = True
-            name = session['name']
-            pic_url = session['profile_image_url']
-    except KeyError as e:
-        loggedIn = False
-        name = "guest"
-        pic_url = url_for('static', filename='img/default.png')
-
-    return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = loggedIn,  pic_url = pic_url)
-
-
-@app.route('/search', methods=['GET'])
-def searchResults(): 
-    query = request.args.get('query')
-    tweets = getTweets(query)
-    quotes = getQuote(query)
-    tones = getSentiment(tweets)
-    return render_template('search.html', tweets = tweets, quotes = quotes, query = query, tones = tones)
-
-'''
-method to log user in
-'''
-@app.route('/login', methods=['POST'])
-def login():
-    email = request.form['email']
-    password = request.form['password']
-    if userExists(email, password):
-        user = db.users.find_one({'email': email})
-        session['name'] = user['name']
-        return render_template('home.html', name = user['name'], loggedIn = True)
-    print('')
-    print("User doesn't exist or password is inccorect.")
-    return render_template('home.html', error = True, error_message = "Credentials don't match")
-
-
-
-'''
-method for user to sign up
-''' 
-@app.route('/signup', methods=['POST'])
-def signUp():
-    if request.method == 'POST':
-        email = request.form['email']
-        name = request.form['name']
-        pw = generate_password_hash(request.form['password'])
-        addUser(name, email, pw)
-        return render_template('home.html', loggedIn = True, name = name)
-
-'''
-method for user to logout 
-'''
-@app.route('/logout')
-def logout(): 
-    # remove the username from the session if it is there
-   session.pop('name', None)
-   return render_template('home.html', loggedIn = False)
 
 
 
