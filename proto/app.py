@@ -360,9 +360,6 @@ def getChartData(stock, function, interval):
     res = requests.get("https://www.alphavantage.co/query", params=querystring)
     return json.loads(res.text, object_pairs_hook=OrderedDict)
 
-
-
-
 '''
 Add user to database if user not already in database 
 password is already hashed 
