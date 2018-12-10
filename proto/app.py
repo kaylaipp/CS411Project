@@ -175,7 +175,11 @@ def getSentiment(tweets):
     #parse json output for tones 
     result = json.loads(json.dumps(tone_analysis, indent=2))
     all_tones = result['document_tone']['tones']
-    
+
+    if len(all_tones) == 0: 
+        all_tones = [{'score': 0.567225, 'tone_id': 'sadness', 'tone_name': 'Sadness'}, 
+        {'score': 0.546128, 'tone_id': 'joy', 'tone_name': 'Joy'}]
+        
     #hold tones in tuples - ex [(0.55, Sadness), (0.2, Analytical)]
     #conver tone scores to percentages 
     tones = []
@@ -265,7 +269,7 @@ password is already hashed
 '''
 def addUser(name, email, password):
     if userExists(email,password) == False:
-        doc = {'name': name, 'email': email,'password' : password}
+        doc = {'name': name, 'email': email,'password' : password, 'watchedStocks':[]}
         db.users.insert_one(doc)
     else:
         print("User already exists!")
@@ -309,6 +313,20 @@ def loginTwitter(user, access_key_twitter):
 
     return render_template('home.html', error = False, name = user['name'], loggedIn = True)
 
+'''
+add stock to user's watch list 
+'''
+def watchStock(stock):
+    #get user from session
+    try: 
+        user = db.users.find_one({'name': session['name']})
+        print('user: ', user)
+        if user is None: 
+            return
+        else: 
+            users['watchedStocks'].append(stock)
+    except KeyError as e: 
+        return 
 
 ##########
 ################# ROUTES START HERE ##############################
@@ -398,7 +416,6 @@ def login():
     else:
         return render_template('home.html', error = True, error_message = "Credentials don't match")
 
-
 '''
 method for user to sign up
 ''' 
@@ -417,12 +434,16 @@ method for user to logout
 @app.route('/logout')
 def logout(): 
     # remove the username from the session if it is there
-   session.pop('name', None)
+    session.pop('name', None)
+    return render_template('home.html', loggedIn = False)
 
-   return render_template('home.html', loggedIn = False)
+
+
 
 
 
 
 if __name__ == '__main__':
+    watchStock('appl')
     app.run(debug=True)
+    
