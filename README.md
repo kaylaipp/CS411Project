@@ -7,5 +7,6 @@ Stock sentiment analysis app to view historical prices of a company and view cur
 ## Implementation
 Built with Python, Flask, and MongoDB on the backend and Bootstap, Javascript + HTML/CSS and Jinja for the frontend
 
-All routes and backend functionality in proto/app.py
+Backend functionality and routes located in proto/app.py
+Frontend functionality located in proto/templates
 
