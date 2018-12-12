@@ -251,11 +251,17 @@ def getChartData(stock, function, interval):
         interval = "1min"
     if(stock ==""):
         stock="AAPL"
-    querystring = {"function": function, "symbol": stock, "interval":interval, "apikey": "N9U9SP687FD676TQ"}
+    # querystring = {"function": function, "symbol": stock, "interval":interval, "apikey": "N9U9SP687FD676TQ"}
+    querystring = {"function": function, "symbol": stock, "interval":interval, "apikey": config.apiKey}
+    # headers = {
+    #     'Content-Type': "application/json",
+    #     'cache-control': "no-cache",
+    #     'Postman-Token': "5284e93d-daa8-4884-9aff-b14c160f5a9b"
+    # }
     headers = {
-        'Content-Type': "application/json",
-        'cache-control': "no-cache",
-        'Postman-Token': "5284e93d-daa8-4884-9aff-b14c160f5a9b"
+    'Content-Type': "application/json",
+    'cache-control': "no-cache",
+    'Postman-Token': config.Postman_Token
     }
     res = requests.get("https://www.alphavantage.co/query", params=querystring)
     return json.loads(res.text, object_pairs_hook=OrderedDict)
