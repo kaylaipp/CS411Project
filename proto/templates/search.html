@@ -23,6 +23,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <link rel="stylesheet" href="{{ url_for('static',filename='bower_components/Ionicons/css/ionicons.min.css') }}">
   <!-- Theme style -->
   <link rel="stylesheet" href="{{ url_for('static',filename='css/AdminLTE.min.css') }}">
+
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/AdminLTE.min.css') }}">
+
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+
   <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
         page. However, you can choose any other skin. Make sure you
         apply the skin class to the body tag so the changes take effect. -->
@@ -115,7 +120,7 @@ desired effect
           <!-- /.box -->
 
           <!-- BAR CHART -->
-          <div class="box box-success">
+          <!-- <div class="box box-success">
             <div class="box-header with-border">
               <h3 class="box-title">Stock Sentiment</h3>
 
@@ -130,12 +135,72 @@ desired effect
                 <canvas id="barChart" style="height:230px"></canvas>
               </div>
             </div>
-            <!-- /.box-body -->
-          </div>
+           
+          </div> -->
           <!-- /.box -->
 
         </div>
         <!-- /.col (RIGHT) -->
+
+        <div class="row">
+        <div class="col-md-6">
+            <div class="box box-success">
+              <div class="box-header with-border">
+                <h3 class="box-title">Stock Sentiment</h3>
+
+                <div class="box-tools pull-right">
+                  <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                </div>
+              </div>
+              <div class="box-body">
+                <div class="chart">
+                  <canvas id="barChart" style="height:230px"></canvas>
+                </div>
+              </div>
+              <!-- /.box-body -->
+            </div>
+        </div>
+        
+        <style>
+          .scroll {
+              max-height: 250px;
+              overflow-y: auto;
+          }
+        </style>
+        <!-- tweets -->
+        <div class="col-md-6">
+              <div class="box box-primary">
+                <div class="box-header with-border">
+                  <h3 class="box-title">Tweets</h3>
+
+                  <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                  </div>
+                </div>
+                <div class="box-body scroll">
+                  <div class="table-responsive">
+                    <table class = "table table-bordered">
+                    <tbody>
+                      {%for tweet in tweets%}
+                        <tr>
+                          <td>{{tweet}}</td>
+                        </tr>
+                      {%endfor%}
+                    </tbody>
+                  </table>
+                  </div>
+                </div>
+              </div>
+        </div>
+      </div>
+
+        
+
+
       </div>
       <!-- /.row -->
 

@@ -113,7 +113,7 @@ def getTweetsHelper(query):
     tweets = []
     for tweet in search_results:
         tweet = tweet.full_text
-        #tweet = re.sub(r'http\S+', "", str(tweet))
+        tweet = re.sub(r'http\S+', "", str(tweet))
         tweets.append(tweet)
     return tweets
 
@@ -389,12 +389,12 @@ def chart():
                 pic_url = session['profile_image_url']
             else: 
                 pic_url = url_for('static',filename='img/Blank_Avatar.png')
-            return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = True,  pic_url = pic_url)
+            return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = True,  pic_url = pic_url, tweets = tweets)
     except KeyError as e:
         loggedIn = False
         name = ""
         pic_url = url_for('static',filename='img/Blank_Avatar.png')
-        return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = False,  pic_url = pic_url)
+        return render_template('search.html', userName = name, tones = tones, labels = labels, values = values, query = stock, interval = interval, key="N9U9SP687FD676TQ", loggedIn = False,  pic_url = pic_url, tweets=tweets)
 
 
 @app.route('/search', methods=['GET'])
@@ -444,12 +444,6 @@ def logout():
     return render_template('home.html', loggedIn = False)
 
 
-
-
-
-
-
 if __name__ == '__main__':
-    watchStock('appl')
     app.run(debug=True)
     
